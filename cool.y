@@ -188,12 +188,12 @@
 	|CLASS TYPEID '{' '}' ';'
             { $$ = class_($2,idtable.add_string("Object"),nil_Features(),
               stringtable.add_string(curr_filename)); } 
+        | error ';'
+            { }
        	;
     
     formals
-    	: 	/* empty */
-    	    { $$ = nil_Formals(); }
-    	| formal /* only 1 */
+    	: formal /* only 1 */
     	    { $$ = single_Formals($1); }
     	| formals ',' formal /* several formals */
 	    { $$ = append_Formals($1, single_Formals($3)); }
@@ -215,10 +215,14 @@
     feature
     	: OBJECTID '(' formals ')' ':' TYPEID '{' expression '}' ';'
 	    { $$ = method($1, $3, $6, $8); }
+	| OBJECTID '(' ')' ':' TYPEID '{' expression '}' ';'
+	    { $$ = method($1, nil_Formals(), $5, $7); }
 	| OBJECTID ':' TYPEID ';'
 	    { $$ = attr($1, $3, no_expr()); }
     	| OBJECTID ':' TYPEID ASSIGN expression ';'
     	    { $$ = attr($1, $3, $5); }
+    	| error ';'
+    	    { }
     	;
        
        
@@ -228,7 +232,7 @@
     	|'(' expression ')'     
 	    { $$ = $2; }
 	| NOT expression //@TODO
-	    { $$ = $2; }
+	    { $$ = comp($2); }
 	| expression '=' expression
 	    { $$ = eq($1, $3); }
 	| expression LE expression 
@@ -258,14 +262,18 @@
 	| IF expression THEN expression ELSE expression FI
 	    { $$ = cond($2,$4,$6); }
 	| OBJECTID '(' expressions ')' 
-	    { $$ = static_dispatch(no_expr(), idtable.add_string("self"), $1, $3); }
+	    { $$ = dispatch(object(idtable.add_string("self")),$1,$3); }
 	| OBJECTID '(' ')'
-	    { $$ = static_dispatch(no_expr(), idtable.add_string("self"), $1, nil_Expressions()); }
-	| expression '@' TYPEID '.' OBJECTID '('expressions ')'
+	    { $$ = dispatch(object(idtable.add_string("self")), $1, nil_Expressions()); }
+	| expression '@' TYPEID '.' OBJECTID '(' expressions ')'
 	    { $$ = static_dispatch($1,$3,$5,$7); }
+	| expression '@' TYPEID '.' OBJECTID '(' ')'
+	    { $$ = static_dispatch($1,$3,$5,nil_Expressions()); }
 	| expression '.' OBJECTID '('expressions ')'
 	    { $$ = dispatch($1, $3, $5); }
-	| TYPEID ASSIGN expression
+	| expression '.' OBJECTID '(' ')'
+	    { $$ = dispatch($1, $3, nil_Expressions()); }
+	| OBJECTID ASSIGN expression
 	    { $$ = assign($1, $3); }
 	| BOOL_CONST
             { $$ = bool_const($1); }
@@ -275,6 +283,10 @@
 	    { $$ = int_const($1); }
 	| OBJECTID
 	    { $$ = object($1); }
+	| '{' error '}'
+	    { yyerrok; }
+	| '(' error ')'
+	    { yyerrok; }
 	;
         
     block_expressions
