@@ -27,7 +27,7 @@
       node_lineno = Current;
     
     
-    #define SET_NODELOC(Current)  \sod
+    #define SET_NODELOC(Current) \  
     node_lineno = Current;
     
     /* IMPORTANT NOTE ON LINE NUMBERS
@@ -139,14 +139,23 @@
     %type <formals> formals
     %type <expression> expression
     %type <expressions> expressions
-        
+    %type <expressions> block_expressions
+    %type <expression> let_statement
+    %type <expression> let_init
+    %type <expression> case_
+    %type <cases> cases
+       
     /* Precedence declarations go here. @TODO MAKE PRECEDENCE*/
     %right ASSIGN 280
+    %left NOT
     %nonassoc '<' LE '='
+    %right let_prec
     %left '+' '-'
     %left '*' '/'
-    %left ':'
+    %left ISVOID
     %right '~'
+    %left '@'
+    %left '.'
     
     
    
@@ -211,13 +220,14 @@
     	| OBJECTID ':' TYPEID ASSIGN expression ';'
     	    { $$ = attr($1, $3, $5); }
     	;
-        
+       
+       
     expression
     	: expression '*' expression 
 	    { $$ = mul($1,$3); } 
-    	|'(' expression ')' //@TODO: PRECEDENCE, MOTHERFUCKER, DO YU SPEAK IT    
+    	|'(' expression ')'     
 	    { $$ = $2; }
-	| NOT expression //@TODO: FUCK
+	| NOT expression //@TODO
 	    { $$ = $2; }
 	| expression '=' expression
 	    { $$ = eq($1, $3); }
@@ -237,23 +247,24 @@
 	    { $$ = isvoid($2); }
 	| NEW TYPEID
 	    { $$ = new_($2); }
-	/*| CASE expression OF //@TODO: FUCK IT WE"LL DO IT LIVE
-	    {}
-	| LET OBJECTID ':' TYPEID ASSIGN expression features IN expression
-	    {}*/
-	| '{' expressions '}'//FUUUUUUUUCK
-	    { $$ = $2; }
+	| case_
+	    { $$ = $1; }
+	| let_statement
+	    { $$ = $1; }
+	| '{' block_expressions '}'
+	    { $$ = block($2); }
 	| WHILE expression LOOP expression POOL
 	    { $$ = loop($2,$4); }
 	| IF expression THEN expression ELSE expression FI
 	    { $$ = cond($2,$4,$6); }
-	| OBJECTID '(' expressions ')' //FUCK THIS TOO
-	    { $$ = static_dispatch( idtable.add_string("self"), $1, $3); }
+	| OBJECTID '(' expressions ')' 
+	    { $$ = static_dispatch(no_expr(), idtable.add_string("self"), $1, $3); }
 	| OBJECTID '(' ')'
-	    { $$ = static_dispatch( idtable.add_string("self"), $1, nil_Expressions()); }
-	/*| expression '@' TYPEID //ALSDOSIOU"JWQE#MNCXZSVIOJ
-	    {}
-	*/
+	    { $$ = static_dispatch(no_expr(), idtable.add_string("self"), $1, nil_Expressions()); }
+	| expression '@' TYPEID '.' OBJECTID '('expressions ')'
+	    { $$ = static_dispatch($1,$3,$5,$7); }
+	| expression '.' OBJECTID '('expressions ')'
+	    { $$ = dispatch($1, $3, $5); }
 	| TYPEID ASSIGN expression
 	    { $$ = assign($1, $3); }
 	| BOOL_CONST
@@ -266,18 +277,51 @@
 	    { $$ = object($1); }
 	;
         
-        
-    expressions
+    block_expressions
     	: expression ';'
 		{ $$ = single_Expressions($1); }
-	| expressions expression ';'
-		{ $$ = append_Expressions($1, single_Expressions($2)); }
-	| expression
+	| block_expressions expression ';'
+		{ $$ = append_Expressions($1, single_Expressions($2)); }    
+        ;
+    expressions
+	:expression
 		{ $$ = single_Expressions($1); }
 	| expressions ',' expression
 		{ $$ = append_Expressions($1, single_Expressions($3)); } 
     	;
+
+
+    case_
+    	: CASE expression OF cases ESAC
+    		{ $$ = typcase($2,$4); }
+    	;
+
+    cases
+    	: OBJECTID ':' TYPEID DARROW expression ';'
+    		{ $$ = single_Cases(branch($1,$3,$5)); }
+    	| cases OBJECTID ':' TYPEID DARROW expression ';'
+		{ $$ = append_Cases($1,single_Cases(branch($2,$4,$6))); }
+    	;
     
+    let_statement
+    	: LET OBJECTID ':' TYPEID IN expression %prec let_prec
+    		{ $$ = let($2,$4,no_expr(),$6); }
+    	| LET OBJECTID ':' TYPEID let_init %prec let_prec
+    		{ $$ = let($2,$4,no_expr(),$5); }
+    	| LET OBJECTID ':' TYPEID ASSIGN expression IN expression %prec let_prec
+    		{ $$ = let($2,$4,$6,$8); }
+   	| LET OBJECTID ':' TYPEID ASSIGN expression let_init %prec let_prec
+    		{ $$ = let($2,$4,$6,$7); }
+    	;
+    	
+    	
+    let_init
+    	: ',' OBJECTID ':' TYPEID IN expression %prec let_prec
+    		{ $$ = let($2,$4,no_expr(),$6); }
+    	| ',' OBJECTID ':' TYPEID ASSIGN expression IN expression %prec let_prec
+    		{ $$ = let($2,$4,$6,$8); }
+    	| ',' OBJECTID ':' TYPEID ASSIGN expression let_init %prec let_prec
+    		{ $$ = let($2,$4,$6,$7); }
     
     /* end of grammar */
     %%
