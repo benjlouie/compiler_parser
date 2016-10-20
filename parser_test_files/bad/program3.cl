@@ -1,4 +1,5 @@
-class A inherits {
+(*This file tests catching unrecoverable errors within the file *)
+class A inherits { --missing class to inherit from
 	x : Int;
 	y : Int;
 	z : Int;

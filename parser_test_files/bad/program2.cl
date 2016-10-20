@@ -1,3 +1,4 @@
+(*This file tests catching unrecoverable errors within the file *)
 class A {
 	x : Int;
 	y : Int;
@@ -11,7 +12,7 @@ class A {
 	baz(a : Int, b : Int, c : Int) : Object {
 		1
 	};
-;
+; --Missing }
 
 class Main inherits IO {
 	main() : SELF_TYPE {

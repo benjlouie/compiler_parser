@@ -1,4 +1,5 @@
-cass A inherits IO {
+(*This file tests catching unrecoverable errors within the file *)
+cass A inherits IO { --typo for class
 	x : Int;
 	y : Int;
 	z : Int;
