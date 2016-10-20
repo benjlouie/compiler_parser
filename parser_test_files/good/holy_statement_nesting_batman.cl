@@ -1,3 +1,5 @@
+(* This class tests nesting of constructs within other constructs
+   e.g. a while loop nested within a for loop nested within a case *)
 class D {
 	x : Int <- 5;
 	a : A <- new A;

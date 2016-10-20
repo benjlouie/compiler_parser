@@ -1,22 +1,26 @@
-class E {
+(* This is the master file for what is accepted by the parser
+   This file was concatenated from smaller test files for more
+   precise testing. *)
+
+(* This class ensures that the parser tests that formal
+   and actual parameters are correctly parsed *)
+class H {
 	a : Int <- b;
 	b : Int <- a;
 	foo() : SELF_TYPE {self};
 	bar(s : String) : SELF_TYPE {foo()};
 	baz(a : Int, b : Int, c : Int, d : Int, e : Int, f : Int, g : Int, h : Int, j : Int, k : Int) : String {"0 1 or many lol"};
 	c : Int <- 5;
-	main() : SELF_TYPE {
+	fun() : SELF_TYPE {
 		bar(baz(1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
 	};
 	d : SELF_TYPE <- main();
 	e : E;
 };
-class Main inherits IO{
-	main() : SELF_TYPE {
-		out_string("Hello world!\n")
-	};
-};
-class A {
+
+(* The following three classes test to ensure
+   that precedence is correct within the parser *)
+class E {
 	a : Int;
 	b : Int;
 	c : Int;
@@ -43,13 +47,13 @@ class A {
 	};
 };
 
-class B inherits A {
+class F inherits A {
 	foo() : Int {
 		5
 	};
 };
 
-class C inherits B {
+class G inherits B {
 	bar : B <- new B;
 
 	test3() : Int { {
@@ -60,6 +64,9 @@ class C inherits B {
 		let a : Int <- let b : Int <- 3 in b in let c : Int <- 4 in 5
 	};
 };
+
+(* This class tests nesting of constructs within other constructs
+   e.g. a while loop nested within a for loop nested within a case *)
 class D {
 	x : Int <- 5;
 	a : A <- new A;
@@ -110,10 +117,13 @@ class D {
 	
 	x : Int <- 9;
 };
-(* models one-dimensional cellular automaton on a circle of finite radius
-   arrays are faked as Strings,
-   X's respresent live cells, dots represent dead cells,
-   no error checking is done *)
+
+(* From here to EOF contains a test program that was used
+   for the lexer which contains every allowable non terminal
+   in COOL. This also serves as a good test for our parser
+   because it makes sure our parser has a rule for each
+   of the symbols *)
+
 class CellularAutomaton inherits IO {
     population_map : String;
    
@@ -189,7 +199,7 @@ class CellularAutomaton inherits IO {
 
 class A inherits IO {
 	print() : SELF_TYPE {{
-		out_string("A method claled\n");
+		out_string("A method called\n");
 		self;
 	}};
 };

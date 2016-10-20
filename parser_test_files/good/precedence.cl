@@ -1,3 +1,5 @@
+(* The following three classes test to ensure
+   that precedence is correct within the parser *)
 class A {
 	a : Int;
 	b : Int;
