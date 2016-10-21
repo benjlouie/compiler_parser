@@ -14,7 +14,7 @@
   
   /* Locations */
   #define YYLTYPE int              /* the type of locations */
-  #define cool_yylloc curr_lineno  /* use the curr_lineno from the lexer
+  /*#define cool_yylloc curr_lineno   use the curr_lineno from the lexer
   				      for the location of tokens */
     
     extern int node_lineno;           /*set before constructing a tree node
