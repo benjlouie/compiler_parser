@@ -14,20 +14,20 @@
   
   /* Locations */
   #define YYLTYPE int              /* the type of locations */
-  /*#define cool_yylloc curr_lineno  /* use the curr_lineno from the lexer
-  for the location of tokens */
+  /*#define cool_yylloc curr_lineno   use the curr_lineno from the lexer
+  				      for the location of tokens */
     
-    extern int node_lineno;          /* set before constructing a tree node
+    extern int node_lineno;           /*set before constructing a tree node
     to whatever you want the line number
     for the tree node to be */
-      
+     
       
       #define YYLLOC_DEFAULT(Current, Rhs, N)         \
       Current = Rhs[1];                             \
       node_lineno = Current;
     
     
-    #define SET_NODELOC(Current) \  
+    #define SET_NODELOC(Current) \
     node_lineno = Current;
     
     /* IMPORTANT NOTE ON LINE NUMBERS
@@ -293,7 +293,9 @@
     	: expression ';'
 		{ $$ = single_Expressions($1); }
 	| block_expressions expression ';'
-		{ $$ = append_Expressions($1, single_Expressions($2)); }    
+		{ $$ = append_Expressions($1, single_Expressions($2)); }
+	| error ';'
+	    { }
         ;
     expressions
 	:expression
@@ -324,6 +326,14 @@
     		{ $$ = let($2,$4,$6,$8); }
    	| LET OBJECTID ':' TYPEID ASSIGN expression let_init %prec let_prec
     		{ $$ = let($2,$4,$6,$7); }
+    	| LET OBJECTID ':' TYPEID ASSIGN error IN expression %prec let_prec
+    		{ }
+   	| LET OBJECTID ':' TYPEID ASSIGN error let_init %prec let_prec
+    		{ }
+    	| LET OBJECTID ':' TYPEID ASSIGN expression IN error %prec let_prec
+    		{ }
+    	| LET OBJECTID ':' TYPEID IN error %prec let_prec
+    		{ }
     	;
     	
     	
@@ -334,7 +344,15 @@
     		{ $$ = let($2,$4,$6,$8); }
     	| ',' OBJECTID ':' TYPEID ASSIGN expression let_init %prec let_prec
     		{ $$ = let($2,$4,$6,$7); }
-    
+    	| ',' OBJECTID ':' TYPEID ASSIGN error IN expression %prec let_prec
+    		{ }
+    	| ',' OBJECTID ':' TYPEID ASSIGN error let_init %prec let_prec
+    		{ }
+    	| ',' OBJECTID ':' TYPEID IN error %prec let_prec
+    		{ }
+    	| ',' OBJECTID ':' TYPEID ASSIGN expression IN error %prec let_prec
+    		{ }
+    	;
     /* end of grammar */
     %%
     
