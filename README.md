@@ -28,7 +28,7 @@ The include (.h) files for this assignment can be found in
 	
 Instructions
 ------------
-Move cool.y into a new version of the PA3 folder from Stanford's VM, which can be downloaded here: http://d2bk0s8yylvsxl.cloudfront.net/stanford-compilers/vm/compilers-vm.zip. If you need help, you can get it here: http://pashabd.com/how-to-install-classroom-object-oriented-language-cool-programming-in-your-windows-computer/ or ask Group 4.
+Move cool.y into a new version of the PA3 folder from Stanford's VM, which can be downloaded here: http://d2bk0s8yylvsxl.cloudfront.net/stanford-compilers/vm/compilers-vm.zip. If you need help getting it running or moving files into the VM, you can get help here: http://pashabd.com/how-to-install-classroom-object-oriented-language-cool-programming-in-your-windows-computer/ or ask Group 4.
 
 Due to line 17 in cool.y being commented out, this will compile, but does not get correct line numbers in the AST.
 
