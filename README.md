@@ -28,18 +28,26 @@ The include (.h) files for this assignment can be found in
 	
 Instructions
 ------------
-Move cool.y into a new version of the PA3 folder from Ada.
+Move cool.y into a new version of the PA3 folder from Stanford's VM, which can be downloaded here: http://d2bk0s8yylvsxl.cloudfront.net/stanford-compilers/vm/compilers-vm.zip. If you need help, you can get it here: http://pashabd.com/how-to-install-classroom-object-oriented-language-cool-programming-in-your-windows-computer/ or ask Group 4.
+
 Due to line 17 in cool.y being commented out, this will compile, but does not get correct line numbers in the AST.
-run:
+
+Run:
   gmake parser
+
 This will give you multiple files including an executable file:
   parser
+
 You can then run:
   myparser <test_file.cl>
+
 This will print of the generated AST.
+
 You can also run:
   mycoolc <tests_file.cl>
+
 This will use the parser that we made in conjunction with Stanford's sections to compile cool code.
+
 You can check our code against Stanford's parser by using:
   gmake lexer
 from the PA2 folder. 
