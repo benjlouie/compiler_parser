@@ -20,6 +20,7 @@
     Node *root;
     void yyerror(char *s);        /*  defined below; called for each parse error */
     extern int yylex();           /*  the entry point to the lexer  */ //TODO: check, might be error
+	extern int yyparse();
     int omerrs = 0;               /* number of errors in lexing and parsing */
     %}
     
@@ -97,14 +98,14 @@
     /* Precedence declarations go here. @TODO MAKE PRECEDENCE*/
     %right LARROW 280
     %left NOT
-    %nonassoc '<' LE '='
+    %nonassoc LT LE EQUALS
     %right let_prec
-    %left '+' '-'
-    %left '*' '/'
+    %left PLUS MINUS
+    %left TIMES DIVIDE
     %left ISVOID
-    %right '~'
-    %left '@'
-    %left '.'
+    %right TILDE
+    %left AT
+    %left DOT
     
     %%
     
@@ -125,29 +126,29 @@
     
     /* If no parent is specified, the class inherits from the Object class. */
     class	
-        : CLASS TYPE INHERITS TYPE '{' features '}' ';'
+        : CLASS TYPE INHERITS TYPE LBRACE features RBRACE SEMI
             { 
             $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, $4), $6); 
             free($2); 
             free($4);
             }
-        |CLASS TYPE '{' features '}' ';'
+        |CLASS TYPE LBRACE features RBRACE SEMI
             { 
             $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, "Object"), $4);
             free($2);
             } 
-        |CLASS TYPE INHERITS TYPE '{' '}' ';'
+        |CLASS TYPE INHERITS TYPE LBRACE RBRACE SEMI
             { 
             $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, $4), new Node(AST_NULL)); //TODO: nil node? figure it out future me
             free($2);
             free($4);
             }
-        |CLASS TYPE '{' '}' ';'
+        |CLASS TYPE LBRACE RBRACE SEMI
             { 
             $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, "Object"), new Node(AST_NULL)); //TODO: nil node? figure it out future me
             free($2);
             } 
-        | error ';'
+        | error SEMI
             { }
         ;
        
@@ -161,43 +162,43 @@
         ;	
             
     feature
-        : IDENTIFIER '(' formals ')' ':' TYPE '{' expression '}' ';'
+        : IDENTIFIER LPAREN formals RPAREN COLON TYPE LBRACE expression RBRACE SEMI
             { 
             $$ = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, $1), $3, new Node(AST_TYPE, $6), $8);
             free($1);
             free($6);
             }
-        | IDENTIFIER '(' ')' ':' TYPE '{' expression '}' ';'
+        | IDENTIFIER LPAREN RPAREN COLON TYPE LBRACE expression RBRACE SEMI
             { 
             $$ = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_NULL), new Node(AST_TYPE, $5), $7);
             free($1);
             free($5);
             }
-        | IDENTIFIER ':' TYPE ';'
+        | IDENTIFIER COLON TYPE SEMI
             { 
             $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3), new Node(AST_NULL)); 
             free($1); 
             free($3);
             }
-        | IDENTIFIER ':' TYPE LARROW expression ';'
+        | IDENTIFIER COLON TYPE LARROW expression SEMI
             { 
             $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3), $5); 
             free($1); 
             free($3); 
             }
-        | error ';'
+        | error SEMI
             { }
         ;
     
     formals
         : formal /* only 1 */
             { $$ = new Node(AST_FORMALLIST, 1, $1); }
-        | formals ',' formal /* several formals */
+        | formals COMMA formal /* several formals */
             { $$ = $1; $1->addChild($3); }
         ;
                 
     formal
-        : IDENTIFIER ':' TYPE 
+        : IDENTIFIER COLON TYPE 
             { 
             $$ = new Node(AST_FORMAL, 2, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3)); 
             free($1); 
@@ -207,25 +208,25 @@
        
        
     expression
-    	: expression '*' expression 
+    	: expression TIMES expression 
             { $$ = new Node(AST_TIMES,2,$1,$3); } 
-    	|'(' expression ')'     
+    	| LPAREN expression RPAREN     
             { $$ = $2; }
         | NOT expression
             { $$ = new Node(AST_NOT,1,$2); }
-        | expression '=' expression
+        | expression EQUALS expression
             { $$ = new Node(AST_EQUALS,2,$1,$3); }
         | expression LE expression 
             { $$ = new Node(AST_LE,2,$1,$3); }
-        | expression '<' expression
+        | expression LT expression
             { $$ = new Node(AST_LT,2,$1,$3); } 
-        | '~' expression
+        | TILDE expression
             { $$ = new Node(AST_TILDE,1,$2); }
-        | expression '/' expression
+        | expression DIVIDE expression
             { $$ = new Node(AST_DIVIDE,2,$1,$3); } 
-        | expression '+' expression 
+        | expression PLUS expression 
             { $$ = new Node(AST_PLUS,2,$1,$3); }
-        | expression '-' expression
+        | expression MINUS expression
             { $$ = new Node(AST_MINUS,2,$1,$3); }
         | ISVOID expression
             { $$ = new Node(AST_ISVOID,1,$2); }
@@ -235,23 +236,23 @@
             { $$ = $1; }
         | let_statement
             { $$ = $1; }
-        | '{' block_expressions '}'
+        | LBRACE block_expressions RBRACE
             { $$ = $2; }
         | WHILE expression LOOP expression POOL
             { $$ = new Node(AST_WHILE,3,$2, new Node(AST_WHILECOMPARE),$4); }
         | IF expression THEN expression ELSE expression FI
             { $$ = new Node(AST_IF,6,$2, new Node(AST_IFTEST),$4,new Node(AST_IFTHEN),$6,new Node(AST_IFELSE)); }
-        | IDENTIFIER '(' expressions ')' 
+        | IDENTIFIER LPAREN expressions RPAREN 
             { $$ = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $1),$3); free($1); }
-        | IDENTIFIER '(' ')'
+        | IDENTIFIER LPAREN RPAREN
             { $$ = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_NULL)); free($1); }
-        | expression '@' TYPE '.' IDENTIFIER '(' expressions ')'
+        | expression AT TYPE DOT IDENTIFIER LPAREN expressions RPAREN
             { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_TYPE,$3),new Node(AST_METHOD_IDENTIFIER, $5),$7); free($3); free($5); }
-        | expression '@' TYPE '.' IDENTIFIER '(' ')'
+        | expression AT TYPE DOT IDENTIFIER LPAREN RPAREN
             { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_TYPE,$3),new Node(AST_METHOD_IDENTIFIER, $5), new Node(AST_NULL)); free($3); free($5); } 
-        | expression '.' IDENTIFIER '('expressions ')'
+        | expression DOT IDENTIFIER LPAREN expressions RPAREN
             { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $3),$5); free($3); }
-        | expression '.' IDENTIFIER '(' ')'
+        | expression DOT IDENTIFIER LPAREN RPAREN
             { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $3), new Node(AST_NULL)); free($3); }
         | IDENTIFIER LARROW expression
             { $$ = new Node(AST_LARROW,2,new Node(AST_IDENTIFIER, $1),$3); free($1); }
@@ -262,27 +263,27 @@
         | STRING
             { $$ = new Node(AST_STRING, $1); free($1); }
         | INTEGERLITERAL
-            { $$ = new Node(AST_INTEGERLITERAL, $1); } //TODO: check this, getting integer correctly?
+            { $$ = new Node(AST_INTEGERLITERAL, to_string($1)); } //TODO: check this, getting integer correctly?
         | IDENTIFIER
             { $$ = new Node(AST_IDENTIFIER, $1); free($1); }
-        | '{' error '}'
+        | LBRACE error RBRACE
             { yyerrok; }
-        | '(' error ')'
+        | LPAREN error RPAREN
             { yyerrok; }
         ;
         
     block_expressions
-    	: expression ';'
+    	: expression SEMI
             { $$ = new Node(AST_EXPRSEMILIST,1,$1); }
-        | block_expressions expression ';'
+        | block_expressions expression SEMI
             { $$ = $1; $1->addChild($2); }
-        | error ';'
+        | error SEMI
             { }
             ;
     expressions
         :expression
             { $$ = new Node(AST_EXPRLIST,1,$1); }
-        | expressions ',' expression
+        | expressions COMMA expression
             { $$ = $1; $1->setFirstChild($3); } 
         ;
 
@@ -293,50 +294,50 @@
     	;
 
     cases
-    	: IDENTIFIER ':' TYPE RARROW expression ';'
+    	: IDENTIFIER COLON TYPE RARROW expression SEMI
     		{ $$ = new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $1),new Node(AST_TYPE, $3),$5); free($1); free($3); }
-    	| cases IDENTIFIER ':' TYPE RARROW expression ';'
+    	| cases IDENTIFIER COLON TYPE RARROW expression SEMI
             { $$ = $1; $1->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6)); free($2); free($4); }
     	;
     
     let_statement
-    	: LET IDENTIFIER ':' TYPE IN expression %prec let_prec
+    	: LET IDENTIFIER COLON TYPE IN expression %prec let_prec
     		{ 
             $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),new Node(AST_NULL)),$6); 
             free($2); 
             free($4); 
             }
-    	| LET IDENTIFIER ':' TYPE let_init %prec let_prec
+    	| LET IDENTIFIER COLON TYPE let_init %prec let_prec
     		{ 
             $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),new Node(AST_NULL)) ,$5); 
             free($2); 
             free($4); 
             }
-    	| LET IDENTIFIER ':' TYPE LARROW expression IN expression %prec let_prec
+    	| LET IDENTIFIER COLON TYPE LARROW expression IN expression %prec let_prec
     		{ 
             $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6) ,$8); 
             free($2); 
             free($4); 
             }
-        | LET IDENTIFIER ':' TYPE LARROW expression let_init %prec let_prec
+        | LET IDENTIFIER COLON TYPE LARROW expression let_init %prec let_prec
     		{ 
             $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6) ,$7); 
             free($2); 
             free($4); 
             }
-    	| LET IDENTIFIER ':' TYPE LARROW error IN expression %prec let_prec
+    	| LET IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
     		{ }
-        | LET IDENTIFIER ':' TYPE LARROW error let_init %prec let_prec
+        | LET IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
     		{ }
-    	| LET IDENTIFIER ':' TYPE LARROW expression IN error %prec let_prec
+    	| LET IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
     		{ }
-    	| LET IDENTIFIER ':' TYPE IN error %prec let_prec
+    	| LET IDENTIFIER COLON TYPE IN error %prec let_prec
     		{ }
     	;
     	
     	
     let_init
-    	: ',' IDENTIFIER ':' TYPE IN expression %prec let_prec
+    	: COMMA IDENTIFIER COLON TYPE IN expression %prec let_prec
     		{ 
             $$ = new Node(AST_LET,1
                 ,new Node(AST_IDTYPEEXPR,3
@@ -347,7 +348,7 @@
             free($2);
             free($4);
             }
-    	| ',' IDENTIFIER ':' TYPE LARROW expression IN expression %prec let_prec
+    	| COMMA IDENTIFIER COLON TYPE LARROW expression IN expression %prec let_prec
     		{ 
             $$ = new Node(AST_LET,1
                 ,new Node(AST_IDTYPEEXPR,3
@@ -358,7 +359,7 @@
             free($2);
             free($4);
             }
-    	| ',' IDENTIFIER ':' TYPE LARROW expression let_init %prec let_prec
+    	| COMMA IDENTIFIER COLON TYPE LARROW expression let_init %prec let_prec
     		{ 
             $$ = new Node(AST_LET,1
                 ,new Node(AST_IDTYPEEXPR,3
@@ -369,13 +370,13 @@
             free($2);
             free($4);
             }
-    	| ',' IDENTIFIER ':' TYPE LARROW error IN expression %prec let_prec
+    	| COMMA IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
     		{ }
-    	| ',' IDENTIFIER ':' TYPE LARROW error let_init %prec let_prec
+    	| COMMA IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
     		{ }
-    	| ',' IDENTIFIER ':' TYPE IN error %prec let_prec
+    	| COMMA IDENTIFIER COLON TYPE IN error %prec let_prec
     		{ }
-    	| ',' IDENTIFIER ':' TYPE LARROW expression IN error %prec let_prec
+    	| COMMA IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
     		{ }
     	;
     /* end of grammar */
