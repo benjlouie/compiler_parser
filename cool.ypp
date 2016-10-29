@@ -1,0 +1,405 @@
+/*
+*  cool.y
+*              Parser definition for the COOL language.
+*
+*/
+%{
+    #ifdef __linux__
+    #include "../src/ast.h"
+    #else
+    #include "ast.h"
+    #endif
+    #include <iostream>
+    
+  
+  /* Locations */
+  //#define YYLTYPE int              /* the type of locations */
+    
+    extern int yylineno;
+    
+    Node *root;
+    void yyerror(char *s);        /*  defined below; called for each parse error */
+    extern int yylex();           /*  the entry point to the lexer  */ //TODO: check, might be error
+	extern int yyparse();
+    int omerrs = 0;               /* number of errors in lexing and parsing */
+    %}
+    
+    /* A union of all the types that can be the result of parsing actions. */
+    %union
+    {
+        char *Name;
+        int Value;
+        Node* node;
+    }
+    
+    // 42 Tokens go here, all caps
+    %token <Name> IDENTIFIER
+    %token <Value> INTEGERLITERAL
+    %token <Name> STRING
+    %token <Name> TYPE
+
+    %token <node> CASE
+    %token <node> ESAC
+    %token <node> FALSE
+    %token <node> FI
+    %token <node> IF
+    %token <node> ELSE
+    %token <node> IN 
+    %token <node> INHERITS
+    %token <node> ISVOID
+    %token <node> LET
+    %token <node> LOOP
+    %token <node> NEW
+    %token <node> NOT
+    %token <node> OF
+    %token <node> POOL
+    %token <node> THEN
+    %token <node> WHILE
+    %token <node> TRUE
+    %token <node> CLASS
+    %token <node> AT
+    %token <node> COLON
+    %token <node> COMMA
+    %token <node> DIVIDE
+    %token <node> DOT
+    %token <node> RARROW
+    %token <node> EQUALS
+    %token <node> LARROW
+    %token <node> LBRACE
+    %token <node> LE
+    %token <node> LPAREN
+    %token <node> LT
+    %token <node> MINUS
+    %token <node> PLUS
+    %token <node> RBRACE
+    %token <node> RPAREN
+    %token <node> SEMI
+    %token <node> TILDE
+    %token <node> TIMES
+    
+    /* Complete the nonterminal list below */
+    
+    /* Declare types for the grammar's non-terminals. */
+    %type <node> program
+    %type <node> class_list
+    %type <node> class
+    %type <node> feature
+    %type <node> features
+    %type <node> formal
+    %type <node> formals
+    %type <node> expression
+    %type <node> expressions
+    %type <node> block_expressions
+    %type <node> let_statement
+    %type <node> let_init
+    %type <node> case_
+    %type <node> cases
+       
+    /* Precedence declarations go here. @TODO MAKE PRECEDENCE*/
+    %right LARROW 280
+    %left NOT
+    %nonassoc LT LE EQUALS
+    %right let_prec
+    %left PLUS MINUS
+    %left TIMES DIVIDE
+    %left ISVOID
+    %right TILDE
+    %left AT
+    %left DOT
+    
+    %%
+    
+    
+    /* 
+    Save the root of the abstract syntax tree in a global variable.
+    */
+    program	
+        : class_list	{ $$ = $1; root = $$; }
+        ;
+    
+    class_list
+        : class			/* single class */
+            { $$ = new Node(AST_PROGRAM, 1, $1);  }
+        | class_list class	/* several classes */
+            { $$ = $1; $1->addChild($2); }
+        ;
+    
+    /* If no parent is specified, the class inherits from the Object class. */
+    class	
+        : CLASS TYPE INHERITS TYPE LBRACE features RBRACE SEMI
+            { 
+            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, $4), $6); 
+            free($2); 
+            free($4);
+            }
+        |CLASS TYPE LBRACE features RBRACE SEMI
+            { 
+            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, "Object"), $4);
+            free($2);
+            } 
+        |CLASS TYPE INHERITS TYPE LBRACE RBRACE SEMI
+            { 
+            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, $4), new Node(AST_NULL)); //TODO: nil node? figure it out future me
+            free($2);
+            free($4);
+            }
+        |CLASS TYPE LBRACE RBRACE SEMI
+            { 
+            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, "Object"), new Node(AST_NULL)); //TODO: nil node? figure it out future me
+            free($2);
+            } 
+        | error SEMI
+            { $$ = new Node(AST_NULL); }
+        ;
+       
+    
+    /* Feature list may be empty, but no empty features in list. */
+    features
+        : feature
+            { $$ = new Node(AST_FEATURESET, 1, $1); }
+        | features feature
+            { $$ = $1; $1->addChild($2); }
+        ;	
+            
+    feature
+        : IDENTIFIER LPAREN formals RPAREN COLON TYPE LBRACE expression RBRACE SEMI
+            { 
+            $$ = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, $1), $3, new Node(AST_TYPE, $6), $8);
+            free($1);
+            free($6);
+            }
+        | IDENTIFIER LPAREN RPAREN COLON TYPE LBRACE expression RBRACE SEMI
+            { 
+            $$ = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_NULL), new Node(AST_TYPE, $5), $7);
+            free($1);
+            free($5);
+            }
+        | IDENTIFIER COLON TYPE SEMI
+            { 
+            $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3), new Node(AST_NULL)); 
+            free($1); 
+            free($3);
+            }
+        | IDENTIFIER COLON TYPE LARROW expression SEMI
+            { 
+            $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3), $5); 
+            free($1); 
+            free($3); 
+            }
+        | error SEMI
+            {  $$ = new Node(AST_NULL); }
+        ;
+    
+    formals
+        : formal /* only 1 */
+            { $$ = new Node(AST_FORMALLIST, 1, $1); }
+        | formals COMMA formal /* several formals */
+            { $$ = $1; $1->addChild($3); }
+        ;
+                
+    formal
+        : IDENTIFIER COLON TYPE 
+            { 
+            $$ = new Node(AST_FORMAL, 2, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3)); 
+            free($1); 
+            free($3); 
+            }
+        ;	 
+       
+       
+    expression
+    	: expression TIMES expression 
+            { $$ = new Node(AST_TIMES,2,$1,$3); } 
+    	| LPAREN expression RPAREN     
+            { $$ = $2; }
+        | NOT expression
+            { $$ = new Node(AST_NOT,1,$2); }
+        | expression EQUALS expression
+            { $$ = new Node(AST_EQUALS,2,$1,$3); }
+        | expression LE expression 
+            { $$ = new Node(AST_LE,2,$1,$3); }
+        | expression LT expression
+            { $$ = new Node(AST_LT,2,$1,$3); } 
+        | TILDE expression
+            { $$ = new Node(AST_TILDE,1,$2); }
+        | expression DIVIDE expression
+            { $$ = new Node(AST_DIVIDE,2,$1,$3); } 
+        | expression PLUS expression 
+            { $$ = new Node(AST_PLUS,2,$1,$3); }
+        | expression MINUS expression
+            { $$ = new Node(AST_MINUS,2,$1,$3); }
+        | ISVOID expression
+            { $$ = new Node(AST_ISVOID,1,$2); }
+        | NEW TYPE
+            { $$ = new Node(AST_NEW,1,new Node(AST_TYPE, $2)); free($2); }
+        | case_
+            { $$ = $1; }
+        | let_statement
+            { $$ = $1; }
+        | LBRACE block_expressions RBRACE
+            { $$ = $2; }
+        | WHILE expression LOOP expression POOL
+            { $$ = new Node(AST_WHILE,3,$2, new Node(AST_WHILECOMPARE),$4); }
+        | IF expression THEN expression ELSE expression FI
+            { $$ = new Node(AST_IF,6,$2, new Node(AST_IFTEST),$4,new Node(AST_IFTHEN),$6,new Node(AST_IFELSE)); }
+        | IDENTIFIER LPAREN expressions RPAREN 
+            { $$ = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $1),$3); free($1); }
+        | IDENTIFIER LPAREN RPAREN
+            { $$ = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_NULL)); free($1); }
+        | expression AT TYPE DOT IDENTIFIER LPAREN expressions RPAREN
+            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_TYPE,$3),new Node(AST_METHOD_IDENTIFIER, $5),$7); free($3); free($5); }
+        | expression AT TYPE DOT IDENTIFIER LPAREN RPAREN
+            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_TYPE,$3),new Node(AST_METHOD_IDENTIFIER, $5), new Node(AST_NULL)); free($3); free($5); } 
+        | expression DOT IDENTIFIER LPAREN expressions RPAREN
+            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $3),$5); free($3); }
+        | expression DOT IDENTIFIER LPAREN RPAREN
+            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $3), new Node(AST_NULL)); free($3); }
+        | IDENTIFIER LARROW expression
+            { $$ = new Node(AST_LARROW,2,new Node(AST_IDENTIFIER, $1),$3); free($1); }
+        | TRUE
+                { $$ = new Node(AST_TRUE); }
+        | FALSE
+                { $$ = new Node(AST_FALSE); }
+        | STRING
+            { $$ = new Node(AST_STRING, $1); free($1); }
+        | INTEGERLITERAL
+            { $$ = new Node(AST_INTEGERLITERAL, to_string($1)); } //TODO: check this, getting integer correctly?
+        | IDENTIFIER
+            { $$ = new Node(AST_IDENTIFIER, $1); free($1); }
+        | LBRACE error RBRACE
+            { $$ = new Node(AST_NULL); yyerrok; }
+        | LPAREN error RPAREN
+            { $$ = new Node(AST_NULL); yyerrok; }
+        ;
+        
+    block_expressions
+    	: expression SEMI
+            { $$ = new Node(AST_EXPRSEMILIST,1,$1); }
+        | block_expressions expression SEMI
+            { $$ = $1; $1->addChild($2); }
+        | error SEMI
+            {  $$ = new Node(AST_NULL); }
+            ;
+    expressions
+        :expression
+            { $$ = new Node(AST_EXPRLIST,1,$1); }
+        | expressions COMMA expression
+            { $$ = $1; $1->setFirstChild($3); } 
+        ;
+
+
+    case_
+    	: CASE expression OF cases ESAC
+    		{ $$ = new Node(AST_CASESTATEMENT,2,$2,$4); }
+    	;
+
+    cases
+    	: IDENTIFIER COLON TYPE RARROW expression SEMI
+    		{ $$ = new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $1),new Node(AST_TYPE, $3),$5); free($1); free($3); }
+    	| cases IDENTIFIER COLON TYPE RARROW expression SEMI
+            { $$ = $1; $1->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6)); free($2); free($4); }
+    	;
+    
+    let_statement
+    	: LET IDENTIFIER COLON TYPE IN expression %prec let_prec
+    		{ 
+            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),new Node(AST_NULL)),$6); 
+            free($2); 
+            free($4); 
+            }
+    	| LET IDENTIFIER COLON TYPE let_init %prec let_prec
+    		{ 
+            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),new Node(AST_NULL)) ,$5); 
+            free($2); 
+            free($4); 
+            }
+    	| LET IDENTIFIER COLON TYPE LARROW expression IN expression %prec let_prec
+    		{ 
+            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6) ,$8); 
+            free($2); 
+            free($4); 
+            }
+        | LET IDENTIFIER COLON TYPE LARROW expression let_init %prec let_prec
+    		{ 
+            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6) ,$7); 
+            free($2); 
+            free($4); 
+            }
+    	| LET IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+        | LET IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+    	| LET IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+    	| LET IDENTIFIER COLON TYPE IN error %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+    	;
+    	
+    	
+    let_init
+    	: COMMA IDENTIFIER COLON TYPE IN expression %prec let_prec
+    		{ 
+            $$ = new Node(AST_LET,1
+                ,new Node(AST_IDTYPEEXPR,3
+                    ,new Node(AST_LET_IDENTIFIER, $2)
+                    ,new Node(AST_TYPE, $4)
+                    ,new Node(AST_NULL))
+                ,$6);
+            free($2);
+            free($4);
+            }
+    	| COMMA IDENTIFIER COLON TYPE LARROW expression IN expression %prec let_prec
+    		{ 
+            $$ = new Node(AST_LET,1
+                ,new Node(AST_IDTYPEEXPR,3
+                    ,new Node(AST_LET_IDENTIFIER, $2)
+                    ,new Node(AST_TYPE, $4)
+                    ,$6)
+                ,$8);
+            free($2);
+            free($4);
+            }
+    	| COMMA IDENTIFIER COLON TYPE LARROW expression let_init %prec let_prec
+    		{ 
+            $$ = new Node(AST_LET,1
+                ,new Node(AST_IDTYPEEXPR,3
+                    ,new Node(AST_LET_IDENTIFIER, $2)
+                    ,new Node(AST_TYPE, $4)
+                    ,$6)
+                ,$7);
+            free($2);
+            free($4);
+            }
+    	| COMMA IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+    	| COMMA IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+    	| COMMA IDENTIFIER COLON TYPE IN error %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+    	| COMMA IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
+    		{ $$ = new Node(AST_NULL); }
+    	;
+    /* end of grammar */
+    %%
+    
+    /* This function is called automatically when Bison detects a parse error. */
+    void yyerror(char *s)
+    {
+      extern char *inputFileName;
+      string ret = "\"";
+      ret += inputFileName;
+      ret += "\", line ";
+      ret += to_string(yylineno);
+      ret += ": ";
+      ret += s;
+      ret += " at or near ";
+      ret += to_string(yychar);
+      
+      cerr << ret << endl;
+      //print_cool_token(yychar);
+      omerrs++;
+      
+      if(omerrs>50) {printf("More than 50 errors\n"); exit(1);}
+    }
+    
+    
