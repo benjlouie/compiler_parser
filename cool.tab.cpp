@@ -65,11 +65,7 @@
 /* Line 371 of yacc.c  */
 #line 6 "cool.ypp"
 
-    #ifdef __linux__
 	#include "../src/ast.h"
-	#else
-	#include "../src/ast.h"
-	#endif
     #include <iostream>
     
   
@@ -85,7 +81,7 @@
     int omerrs = 0;               /* number of errors in lexing and parsing */
     
 /* Line 371 of yacc.c  */
-#line 89 "cool.tab.cpp"
+#line 85 "cool.tab.cpp"
 
 # ifndef YY_NULL
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -172,7 +168,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 387 of yacc.c  */
-#line 29 "cool.ypp"
+#line 25 "cool.ypp"
 
         char *Name;
         int Value;
@@ -180,7 +176,7 @@ typedef union YYSTYPE
     
 
 /* Line 387 of yacc.c  */
-#line 184 "cool.tab.cpp"
+#line 180 "cool.tab.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -208,7 +204,7 @@ int yyparse ();
 /* Copy the second part of user declarations.  */
 
 /* Line 390 of yacc.c  */
-#line 212 "cool.tab.cpp"
+#line 208 "cool.tab.cpp"
 
 #ifdef short
 # undef short
@@ -545,14 +541,14 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   117,   117,   121,   123,   129,   135,   140,   146,   151,
-     158,   160,   165,   171,   177,   183,   189,   194,   196,   201,
-     211,   213,   215,   217,   219,   221,   223,   225,   227,   229,
-     231,   233,   235,   237,   239,   241,   243,   245,   247,   249,
-     251,   253,   255,   257,   259,   261,   263,   265,   267,   269,
-     271,   276,   278,   280,   284,   286,   292,   297,   299,   304,
-     310,   316,   322,   328,   330,   332,   334,   340,   351,   362,
-     373,   375,   377,   379
+       0,   113,   113,   117,   119,   125,   131,   136,   142,   147,
+     154,   156,   161,   167,   173,   179,   185,   190,   192,   197,
+     207,   209,   211,   213,   215,   217,   219,   221,   223,   225,
+     227,   229,   231,   233,   235,   237,   239,   241,   243,   245,
+     247,   249,   251,   253,   255,   257,   259,   261,   263,   265,
+     267,   272,   274,   276,   280,   282,   288,   293,   295,   300,
+     306,   312,   318,   324,   326,   328,   330,   336,   347,   358,
+     369,   371,   373,   375
 };
 #endif
 
@@ -1676,25 +1672,25 @@ yyreduce:
     {
         case 2:
 /* Line 1792 of yacc.c  */
-#line 117 "cool.ypp"
+#line 113 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); root = (yyval.node); }
     break;
 
   case 3:
 /* Line 1792 of yacc.c  */
-#line 122 "cool.ypp"
+#line 118 "cool.ypp"
     { (yyval.node) = new Node(AST_PROGRAM, 1, (yyvsp[(1) - (1)].node));  }
     break;
 
   case 4:
 /* Line 1792 of yacc.c  */
-#line 124 "cool.ypp"
+#line 120 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (2)].node); (yyvsp[(1) - (2)].node)->addChild((yyvsp[(2) - (2)].node)); }
     break;
 
   case 5:
 /* Line 1792 of yacc.c  */
-#line 130 "cool.ypp"
+#line 126 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_CLASS, 3, new Node(AST_TYPE, (yyvsp[(2) - (8)].Name)), new Node(AST_TYPE, (yyvsp[(4) - (8)].Name)), (yyvsp[(6) - (8)].node)); 
             free((yyvsp[(2) - (8)].Name)); 
@@ -1704,7 +1700,7 @@ yyreduce:
 
   case 6:
 /* Line 1792 of yacc.c  */
-#line 136 "cool.ypp"
+#line 132 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_CLASS, 3, new Node(AST_TYPE, (yyvsp[(2) - (6)].Name)), new Node(AST_TYPE, "Object"), (yyvsp[(4) - (6)].node));
             free((yyvsp[(2) - (6)].Name));
@@ -1713,7 +1709,7 @@ yyreduce:
 
   case 7:
 /* Line 1792 of yacc.c  */
-#line 141 "cool.ypp"
+#line 137 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_CLASS, 3, new Node(AST_TYPE, (yyvsp[(2) - (7)].Name)), new Node(AST_TYPE, (yyvsp[(4) - (7)].Name)), new Node(AST_NULL)); //TODO: nil node? figure it out future me
             free((yyvsp[(2) - (7)].Name));
@@ -1723,7 +1719,7 @@ yyreduce:
 
   case 8:
 /* Line 1792 of yacc.c  */
-#line 147 "cool.ypp"
+#line 143 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_CLASS, 3, new Node(AST_TYPE, (yyvsp[(2) - (5)].Name)), new Node(AST_TYPE, "Object"), new Node(AST_NULL)); //TODO: nil node? figure it out future me
             free((yyvsp[(2) - (5)].Name));
@@ -1732,25 +1728,25 @@ yyreduce:
 
   case 9:
 /* Line 1792 of yacc.c  */
-#line 152 "cool.ypp"
+#line 148 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 10:
 /* Line 1792 of yacc.c  */
-#line 159 "cool.ypp"
+#line 155 "cool.ypp"
     { (yyval.node) = new Node(AST_FEATURESET, 1, (yyvsp[(1) - (1)].node)); }
     break;
 
   case 11:
 /* Line 1792 of yacc.c  */
-#line 161 "cool.ypp"
+#line 157 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (2)].node); (yyvsp[(1) - (2)].node)->addChild((yyvsp[(2) - (2)].node)); }
     break;
 
   case 12:
 /* Line 1792 of yacc.c  */
-#line 166 "cool.ypp"
+#line 162 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, (yyvsp[(1) - (10)].Name)), (yyvsp[(3) - (10)].node), new Node(AST_TYPE, (yyvsp[(6) - (10)].Name)), (yyvsp[(8) - (10)].node));
             free((yyvsp[(1) - (10)].Name));
@@ -1760,7 +1756,7 @@ yyreduce:
 
   case 13:
 /* Line 1792 of yacc.c  */
-#line 172 "cool.ypp"
+#line 168 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, (yyvsp[(1) - (9)].Name)), new Node(AST_NULL), new Node(AST_TYPE, (yyvsp[(5) - (9)].Name)), (yyvsp[(7) - (9)].node));
             free((yyvsp[(1) - (9)].Name));
@@ -1770,7 +1766,7 @@ yyreduce:
 
   case 14:
 /* Line 1792 of yacc.c  */
-#line 178 "cool.ypp"
+#line 174 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, (yyvsp[(1) - (4)].Name)), new Node(AST_TYPE, (yyvsp[(3) - (4)].Name)), new Node(AST_NULL)); 
             free((yyvsp[(1) - (4)].Name)); 
@@ -1780,7 +1776,7 @@ yyreduce:
 
   case 15:
 /* Line 1792 of yacc.c  */
-#line 184 "cool.ypp"
+#line 180 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, (yyvsp[(1) - (6)].Name)), new Node(AST_TYPE, (yyvsp[(3) - (6)].Name)), (yyvsp[(5) - (6)].node)); 
             free((yyvsp[(1) - (6)].Name)); 
@@ -1790,25 +1786,25 @@ yyreduce:
 
   case 16:
 /* Line 1792 of yacc.c  */
-#line 190 "cool.ypp"
+#line 186 "cool.ypp"
     {  (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 17:
 /* Line 1792 of yacc.c  */
-#line 195 "cool.ypp"
+#line 191 "cool.ypp"
     { (yyval.node) = new Node(AST_FORMALLIST, 1, (yyvsp[(1) - (1)].node)); }
     break;
 
   case 18:
 /* Line 1792 of yacc.c  */
-#line 197 "cool.ypp"
+#line 193 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (3)].node); (yyvsp[(1) - (3)].node)->addChild((yyvsp[(3) - (3)].node)); }
     break;
 
   case 19:
 /* Line 1792 of yacc.c  */
-#line 202 "cool.ypp"
+#line 198 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_FORMAL, 2, new Node(AST_METHOD_IDENTIFIER, (yyvsp[(1) - (3)].Name)), new Node(AST_TYPE, (yyvsp[(3) - (3)].Name))); 
             free((yyvsp[(1) - (3)].Name)); 
@@ -1818,241 +1814,241 @@ yyreduce:
 
   case 20:
 /* Line 1792 of yacc.c  */
-#line 212 "cool.ypp"
+#line 208 "cool.ypp"
     { (yyval.node) = new Node(AST_TIMES,2,(yyvsp[(1) - (3)].node),(yyvsp[(3) - (3)].node)); }
     break;
 
   case 21:
 /* Line 1792 of yacc.c  */
-#line 214 "cool.ypp"
+#line 210 "cool.ypp"
     { (yyval.node) = (yyvsp[(2) - (3)].node); }
     break;
 
   case 22:
 /* Line 1792 of yacc.c  */
-#line 216 "cool.ypp"
+#line 212 "cool.ypp"
     { (yyval.node) = new Node(AST_NOT,1,(yyvsp[(2) - (2)].node)); }
     break;
 
   case 23:
 /* Line 1792 of yacc.c  */
-#line 218 "cool.ypp"
+#line 214 "cool.ypp"
     { (yyval.node) = new Node(AST_EQUALS,2,(yyvsp[(1) - (3)].node),(yyvsp[(3) - (3)].node)); }
     break;
 
   case 24:
 /* Line 1792 of yacc.c  */
-#line 220 "cool.ypp"
+#line 216 "cool.ypp"
     { (yyval.node) = new Node(AST_LE,2,(yyvsp[(1) - (3)].node),(yyvsp[(3) - (3)].node)); }
     break;
 
   case 25:
 /* Line 1792 of yacc.c  */
-#line 222 "cool.ypp"
+#line 218 "cool.ypp"
     { (yyval.node) = new Node(AST_LT,2,(yyvsp[(1) - (3)].node),(yyvsp[(3) - (3)].node)); }
     break;
 
   case 26:
 /* Line 1792 of yacc.c  */
-#line 224 "cool.ypp"
+#line 220 "cool.ypp"
     { (yyval.node) = new Node(AST_TILDE,1,(yyvsp[(2) - (2)].node)); }
     break;
 
   case 27:
 /* Line 1792 of yacc.c  */
-#line 226 "cool.ypp"
+#line 222 "cool.ypp"
     { (yyval.node) = new Node(AST_DIVIDE,2,(yyvsp[(1) - (3)].node),(yyvsp[(3) - (3)].node)); }
     break;
 
   case 28:
 /* Line 1792 of yacc.c  */
-#line 228 "cool.ypp"
+#line 224 "cool.ypp"
     { (yyval.node) = new Node(AST_PLUS,2,(yyvsp[(1) - (3)].node),(yyvsp[(3) - (3)].node)); }
     break;
 
   case 29:
 /* Line 1792 of yacc.c  */
-#line 230 "cool.ypp"
+#line 226 "cool.ypp"
     { (yyval.node) = new Node(AST_MINUS,2,(yyvsp[(1) - (3)].node),(yyvsp[(3) - (3)].node)); }
     break;
 
   case 30:
 /* Line 1792 of yacc.c  */
-#line 232 "cool.ypp"
+#line 228 "cool.ypp"
     { (yyval.node) = new Node(AST_ISVOID,1,(yyvsp[(2) - (2)].node)); }
     break;
 
   case 31:
 /* Line 1792 of yacc.c  */
-#line 234 "cool.ypp"
+#line 230 "cool.ypp"
     { (yyval.node) = new Node(AST_NEW,1,new Node(AST_TYPE, (yyvsp[(2) - (2)].Name))); free((yyvsp[(2) - (2)].Name)); }
     break;
 
   case 32:
 /* Line 1792 of yacc.c  */
-#line 236 "cool.ypp"
+#line 232 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 33:
 /* Line 1792 of yacc.c  */
-#line 238 "cool.ypp"
+#line 234 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (1)].node); }
     break;
 
   case 34:
 /* Line 1792 of yacc.c  */
-#line 240 "cool.ypp"
+#line 236 "cool.ypp"
     { (yyval.node) = (yyvsp[(2) - (3)].node); }
     break;
 
   case 35:
 /* Line 1792 of yacc.c  */
-#line 242 "cool.ypp"
+#line 238 "cool.ypp"
     { (yyval.node) = new Node(AST_WHILE,3,(yyvsp[(2) - (5)].node), new Node(AST_WHILECOMPARE),(yyvsp[(4) - (5)].node)); }
     break;
 
   case 36:
 /* Line 1792 of yacc.c  */
-#line 244 "cool.ypp"
+#line 240 "cool.ypp"
     { (yyval.node) = new Node(AST_IF,6,(yyvsp[(2) - (7)].node), new Node(AST_IFTEST),(yyvsp[(4) - (7)].node),new Node(AST_IFTHEN),(yyvsp[(6) - (7)].node),new Node(AST_IFELSE)); }
     break;
 
   case 37:
 /* Line 1792 of yacc.c  */
-#line 246 "cool.ypp"
+#line 242 "cool.ypp"
     { (yyval.node) = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, (yyvsp[(1) - (4)].Name)),(yyvsp[(3) - (4)].node)); free((yyvsp[(1) - (4)].Name)); }
     break;
 
   case 38:
 /* Line 1792 of yacc.c  */
-#line 248 "cool.ypp"
+#line 244 "cool.ypp"
     { (yyval.node) = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, (yyvsp[(1) - (3)].Name)), new Node(AST_NULL)); free((yyvsp[(1) - (3)].Name)); }
     break;
 
   case 39:
 /* Line 1792 of yacc.c  */
-#line 250 "cool.ypp"
+#line 246 "cool.ypp"
     { (yyval.node) = new Node(AST_DISPATCH,4,(yyvsp[(1) - (8)].node),new Node(AST_TYPE,(yyvsp[(3) - (8)].Name)),new Node(AST_METHOD_IDENTIFIER, (yyvsp[(5) - (8)].Name)),(yyvsp[(7) - (8)].node)); free((yyvsp[(3) - (8)].Name)); free((yyvsp[(5) - (8)].Name)); }
     break;
 
   case 40:
 /* Line 1792 of yacc.c  */
-#line 252 "cool.ypp"
+#line 248 "cool.ypp"
     { (yyval.node) = new Node(AST_DISPATCH,4,(yyvsp[(1) - (7)].node),new Node(AST_TYPE,(yyvsp[(3) - (7)].Name)),new Node(AST_METHOD_IDENTIFIER, (yyvsp[(5) - (7)].Name)), new Node(AST_NULL)); free((yyvsp[(3) - (7)].Name)); free((yyvsp[(5) - (7)].Name)); }
     break;
 
   case 41:
 /* Line 1792 of yacc.c  */
-#line 254 "cool.ypp"
+#line 250 "cool.ypp"
     { (yyval.node) = new Node(AST_DISPATCH,4,(yyvsp[(1) - (6)].node),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, (yyvsp[(3) - (6)].Name)),(yyvsp[(5) - (6)].node)); free((yyvsp[(3) - (6)].Name)); }
     break;
 
   case 42:
 /* Line 1792 of yacc.c  */
-#line 256 "cool.ypp"
+#line 252 "cool.ypp"
     { (yyval.node) = new Node(AST_DISPATCH,4,(yyvsp[(1) - (5)].node),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, (yyvsp[(3) - (5)].Name)), new Node(AST_NULL)); free((yyvsp[(3) - (5)].Name)); }
     break;
 
   case 43:
 /* Line 1792 of yacc.c  */
-#line 258 "cool.ypp"
+#line 254 "cool.ypp"
     { (yyval.node) = new Node(AST_LARROW,2,new Node(AST_IDENTIFIER, (yyvsp[(1) - (3)].Name)),(yyvsp[(3) - (3)].node)); free((yyvsp[(1) - (3)].Name)); }
     break;
 
   case 44:
 /* Line 1792 of yacc.c  */
-#line 260 "cool.ypp"
+#line 256 "cool.ypp"
     { (yyval.node) = new Node(AST_TRUE); }
     break;
 
   case 45:
 /* Line 1792 of yacc.c  */
-#line 262 "cool.ypp"
+#line 258 "cool.ypp"
     { (yyval.node) = new Node(AST_FALSE); }
     break;
 
   case 46:
 /* Line 1792 of yacc.c  */
-#line 264 "cool.ypp"
+#line 260 "cool.ypp"
     { (yyval.node) = new Node(AST_STRING, (yyvsp[(1) - (1)].Name)); free((yyvsp[(1) - (1)].Name)); }
     break;
 
   case 47:
 /* Line 1792 of yacc.c  */
-#line 266 "cool.ypp"
+#line 262 "cool.ypp"
     { (yyval.node) = new Node(AST_INTEGERLITERAL, to_string((yyvsp[(1) - (1)].Value))); }
     break;
 
   case 48:
 /* Line 1792 of yacc.c  */
-#line 268 "cool.ypp"
+#line 264 "cool.ypp"
     { (yyval.node) = new Node(AST_IDENTIFIER, (yyvsp[(1) - (1)].Name)); free((yyvsp[(1) - (1)].Name)); }
     break;
 
   case 49:
 /* Line 1792 of yacc.c  */
-#line 270 "cool.ypp"
+#line 266 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); yyerrok; }
     break;
 
   case 50:
 /* Line 1792 of yacc.c  */
-#line 272 "cool.ypp"
+#line 268 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); yyerrok; }
     break;
 
   case 51:
 /* Line 1792 of yacc.c  */
-#line 277 "cool.ypp"
+#line 273 "cool.ypp"
     { (yyval.node) = new Node(AST_EXPRSEMILIST,1,(yyvsp[(1) - (2)].node)); }
     break;
 
   case 52:
 /* Line 1792 of yacc.c  */
-#line 279 "cool.ypp"
+#line 275 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (3)].node); (yyvsp[(1) - (3)].node)->addChild((yyvsp[(2) - (3)].node)); }
     break;
 
   case 53:
 /* Line 1792 of yacc.c  */
-#line 281 "cool.ypp"
+#line 277 "cool.ypp"
     {  (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 54:
 /* Line 1792 of yacc.c  */
-#line 285 "cool.ypp"
+#line 281 "cool.ypp"
     { (yyval.node) = new Node(AST_EXPRLIST,1,(yyvsp[(1) - (1)].node)); }
     break;
 
   case 55:
 /* Line 1792 of yacc.c  */
-#line 287 "cool.ypp"
+#line 283 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (3)].node); (yyvsp[(1) - (3)].node)->setFirstChild((yyvsp[(3) - (3)].node)); }
     break;
 
   case 56:
 /* Line 1792 of yacc.c  */
-#line 293 "cool.ypp"
+#line 289 "cool.ypp"
     { (yyval.node) = new Node(AST_CASESTATEMENT,2,(yyvsp[(2) - (5)].node),(yyvsp[(4) - (5)].node)); }
     break;
 
   case 57:
 /* Line 1792 of yacc.c  */
-#line 298 "cool.ypp"
+#line 294 "cool.ypp"
     { (yyval.node) = new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, (yyvsp[(1) - (6)].Name)),new Node(AST_TYPE, (yyvsp[(3) - (6)].Name)),(yyvsp[(5) - (6)].node)); free((yyvsp[(1) - (6)].Name)); free((yyvsp[(3) - (6)].Name)); }
     break;
 
   case 58:
 /* Line 1792 of yacc.c  */
-#line 300 "cool.ypp"
+#line 296 "cool.ypp"
     { (yyval.node) = (yyvsp[(1) - (7)].node); (yyvsp[(1) - (7)].node)->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, (yyvsp[(2) - (7)].Name)),new Node(AST_TYPE, (yyvsp[(4) - (7)].Name)),(yyvsp[(6) - (7)].node))); free((yyvsp[(2) - (7)].Name)); free((yyvsp[(4) - (7)].Name)); }
     break;
 
   case 59:
 /* Line 1792 of yacc.c  */
-#line 305 "cool.ypp"
+#line 301 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, (yyvsp[(2) - (6)].Name)),new Node(AST_TYPE, (yyvsp[(4) - (6)].Name)),new Node(AST_NULL)),(yyvsp[(6) - (6)].node)); 
             free((yyvsp[(2) - (6)].Name)); 
@@ -2062,7 +2058,7 @@ yyreduce:
 
   case 60:
 /* Line 1792 of yacc.c  */
-#line 311 "cool.ypp"
+#line 307 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, (yyvsp[(2) - (5)].Name)),new Node(AST_TYPE, (yyvsp[(4) - (5)].Name)),new Node(AST_NULL)) ,(yyvsp[(5) - (5)].node)); 
             free((yyvsp[(2) - (5)].Name)); 
@@ -2072,7 +2068,7 @@ yyreduce:
 
   case 61:
 /* Line 1792 of yacc.c  */
-#line 317 "cool.ypp"
+#line 313 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, (yyvsp[(2) - (8)].Name)),new Node(AST_TYPE, (yyvsp[(4) - (8)].Name)),(yyvsp[(6) - (8)].node)) ,(yyvsp[(8) - (8)].node)); 
             free((yyvsp[(2) - (8)].Name)); 
@@ -2082,7 +2078,7 @@ yyreduce:
 
   case 62:
 /* Line 1792 of yacc.c  */
-#line 323 "cool.ypp"
+#line 319 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, (yyvsp[(2) - (7)].Name)),new Node(AST_TYPE, (yyvsp[(4) - (7)].Name)),(yyvsp[(6) - (7)].node)) ,(yyvsp[(7) - (7)].node)); 
             free((yyvsp[(2) - (7)].Name)); 
@@ -2092,31 +2088,31 @@ yyreduce:
 
   case 63:
 /* Line 1792 of yacc.c  */
-#line 329 "cool.ypp"
+#line 325 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 64:
 /* Line 1792 of yacc.c  */
-#line 331 "cool.ypp"
+#line 327 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 65:
 /* Line 1792 of yacc.c  */
-#line 333 "cool.ypp"
+#line 329 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 66:
 /* Line 1792 of yacc.c  */
-#line 335 "cool.ypp"
+#line 331 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 67:
 /* Line 1792 of yacc.c  */
-#line 341 "cool.ypp"
+#line 337 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_LET,1
                 ,new Node(AST_IDTYPEEXPR,3
@@ -2131,7 +2127,7 @@ yyreduce:
 
   case 68:
 /* Line 1792 of yacc.c  */
-#line 352 "cool.ypp"
+#line 348 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_LET,1
                 ,new Node(AST_IDTYPEEXPR,3
@@ -2146,7 +2142,7 @@ yyreduce:
 
   case 69:
 /* Line 1792 of yacc.c  */
-#line 363 "cool.ypp"
+#line 359 "cool.ypp"
     { 
             (yyval.node) = new Node(AST_LET,1
                 ,new Node(AST_IDTYPEEXPR,3
@@ -2161,31 +2157,31 @@ yyreduce:
 
   case 70:
 /* Line 1792 of yacc.c  */
-#line 374 "cool.ypp"
+#line 370 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 71:
 /* Line 1792 of yacc.c  */
-#line 376 "cool.ypp"
+#line 372 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 72:
 /* Line 1792 of yacc.c  */
-#line 378 "cool.ypp"
+#line 374 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
   case 73:
 /* Line 1792 of yacc.c  */
-#line 380 "cool.ypp"
+#line 376 "cool.ypp"
     { (yyval.node) = new Node(AST_NULL); }
     break;
 
 
 /* Line 1792 of yacc.c  */
-#line 2189 "cool.tab.cpp"
+#line 2185 "cool.tab.cpp"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2417,7 +2413,7 @@ yyreturn:
 
 
 /* Line 2055 of yacc.c  */
-#line 383 "cool.ypp"
+#line 379 "cool.ypp"
 
     
     /* This function is called automatically when Bison detects a parse error. */

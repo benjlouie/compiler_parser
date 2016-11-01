@@ -97,7 +97,7 @@ extern int yydebug;
 typedef union YYSTYPE
 {
 /* Line 2058 of yacc.c  */
-#line 29 "cool.ypp"
+#line 25 "cool.ypp"
 
         char *Name;
         int Value;
