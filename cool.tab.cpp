@@ -2037,7 +2037,7 @@ yyreduce:
   case 57:
 /* Line 1792 of yacc.c  */
 #line 294 "cool.ypp"
-    { (yyval.node) = new Node(AST_CASELIST); (yyval.node)->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, (yyvsp[(1) - (6)].Name)),new Node(AST_TYPE, (yyvsp[(3) - (6)].Name)),(yyvsp[(5) - (6)].node))); free((yyvsp[(1) - (6)].Name)); free((yyvsp[(3) - (6)].Name)); }
+    { (yyval.node) = new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, (yyvsp[(1) - (6)].Name)),new Node(AST_TYPE, (yyvsp[(3) - (6)].Name)),(yyvsp[(5) - (6)].node)); free((yyvsp[(1) - (6)].Name)); free((yyvsp[(3) - (6)].Name)); }
     break;
 
   case 58:
