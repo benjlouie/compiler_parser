@@ -291,7 +291,7 @@
 
     cases
     	: IDENTIFIER COLON TYPE RARROW expression SEMI
-    		{ $$ = new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $1),new Node(AST_TYPE, $3),$5); free($1); free($3); }
+    		{ $$ = new Node(AST_CASELIST); $$->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $1),new Node(AST_TYPE, $3),$5)); free($1); free($3); }
     	| cases IDENTIFIER COLON TYPE RARROW expression SEMI
             { $$ = $1; $1->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6)); free($2); free($4); }
     	;
