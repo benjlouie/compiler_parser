@@ -16,8 +16,8 @@
     Node *root;
     void yyerror(char *s);        /*  defined below; called for each parse error */
     extern int yylex();           /*  the entry point to the lexer  */ //TODO: check, might be error
-	extern int yyparse();
-    int omerrs = 0;               /* number of errors in lexing and parsing */
+	extern int yyparse();          /* number of errors in lexing and parsing */
+    extern int numErrors;
     %}
     
     /* A union of all the types that can be the result of parsing actions. */
@@ -145,7 +145,9 @@
             free($2);
             } 
         | error SEMI
-            { $$ = new Node(AST_NULL); }
+            {  
+                $$ = new Node(AST_NULL);
+            }
         ;
        
     
@@ -183,7 +185,9 @@
             free($3); 
             }
         | error SEMI
-            {  $$ = new Node(AST_NULL); }
+            {  
+                $$ = new Node(AST_NULL);
+            }
         ;
     
     formals
@@ -378,6 +382,101 @@
     /* end of grammar */
     %%
     
+    string getChar(int i)
+    {
+        switch(i) {
+            case 0:
+                return "ERROR";
+            case 282:
+                return "identifier";
+            case 283:
+                return "int";
+            case 284:
+                return "string";
+            case 285:
+                return "type";
+            case 286:
+                return "case";
+            case 287:
+                return "esac";
+            case 288:
+                return "false";
+            case 289:
+                return "fi";
+            case 290:
+                return "if";
+            case 291:
+                return "else";
+            case 292:
+                return "in";
+            case 293:
+                return "inherits";
+            case 294:
+                return "isvoid";
+            case 295:
+                return "let";
+            case 296:
+                return "loop";
+            case 297:
+                return "new";
+            case 298:
+                return "not";
+            case 299:
+                return "of";
+            case 300:
+                return "pool";
+            case 301:
+                return "then";
+            case 302:
+                return "while";
+            case 303:
+                return "true";
+            case 304:
+                return "class";
+            case 305:
+                return "@";
+            case 306:
+                return ":";
+            case 307:
+                return ",";
+            case 308:
+                return "/";
+            case 309:
+                return ".";
+            case 310:
+                return "=>";
+            case 311:
+                return "<-";
+            case 312:
+                return "{";
+            case 313:
+                return "<=";
+            case 314:
+                return "(";
+            case 315:
+                return "<";
+            case 316:
+                return "-";
+            case 317:
+                return "+";
+            case 318:
+                return "}";
+            case 319:
+                return ")";
+            case 320:
+                return ";";
+            case 321:
+                return "~";
+            case 322:
+                return "*";
+            case 323:            
+            default:
+                return "COMPILER ERROR: I don't know how you got here. Here's a number that might help: " + std::to_string(i);
+                //Not quite sure if this is true or not...
+        }
+        
+    }
+
     /* This function is called automatically when Bison detects a parse error. */
     void yyerror(char *s)
     {
@@ -388,14 +487,21 @@
       ret += to_string(yylineno);
       ret += ": ";
       ret += s;
-      ret += " at or near ";
-      ret += to_string(yychar);
+      if(yychar >= 282 && yychar <= 323 ) { 
+        ret += " at or near ";
+        ret += getChar(yychar);
+      }
       
       cerr << ret << endl;
-      //print_cool_token(yychar);
-      omerrs++;
+      numErrors++;
       
-      if(omerrs>50) {printf("More than 50 errors\n"); exit(1);}
+      if(numErrors>50) 
+      {
+        printf("More than 50 errors\n"); 
+        exit(1);
+      }
     }
+
+    
     
     
