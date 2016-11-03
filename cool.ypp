@@ -235,9 +235,9 @@
         | LBRACE block_expressions RBRACE
             { $$ = $2; }
         | WHILE expression LOOP expression POOL
-            { $$ = new Node(AST_WHILE,3,$2, new Node(AST_WHILECOMPARE),$4); }
+            { $$ = new Node(AST_WHILE,2,$2,$4); }
         | IF expression THEN expression ELSE expression FI
-            { $$ = new Node(AST_IF,6,$2, new Node(AST_IFTEST),$4,new Node(AST_IFTHEN),$6,new Node(AST_IFELSE)); }
+            { $$ = new Node(AST_IF,3,$2,$4,$6); }
         | IDENTIFIER LPAREN expressions RPAREN 
             { $$ = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $1),$3); free($1); }
         | IDENTIFIER LPAREN RPAREN
