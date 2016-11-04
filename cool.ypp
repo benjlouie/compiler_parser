@@ -9,17 +9,17 @@
     
   
   /* Locations */
-  //#define YYLTYPE int              /* the type of locations */
+  //#define YYLTYPE int            /* the type of locations */
     
     extern int yylineno;
     
     Node *root;
     void yyerror(char *s);        /*  defined below; called for each parse error */
-    extern int yylex();           /*  the entry point to the lexer  */ //TODO: check, might be error
+    extern int yylex();           /*  the entry point to the lexer  */
 	extern int yyparse();          /* number of errors in lexing and parsing */
     extern int numErrors;
     %}
-    
+
     /* A union of all the types that can be the result of parsing actions. */
     %union
     {
@@ -115,7 +115,10 @@
     
     class_list
         : class			/* single class */
-            { $$ = new Node(AST_PROGRAM, 1, $1);  }
+            { 
+			$$ = new Node(AST_PROGRAM, 1, $1); 
+			$$->lineNumber = 0;
+			}
         | class_list class	/* several classes */
             { $$ = $1; $1->addChild($2); }
         ;
@@ -124,29 +127,50 @@
     class	
         : CLASS TYPE INHERITS TYPE LBRACE features RBRACE SEMI
             { 
-            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, $4), $6); 
+			auto className = new Node(AST_TYPE, $2);
+			className->lineNumber = @2.first_line;
+			auto inherits = new Node(AST_TYPE, $4);
+			inherits->lineNumber = @4.first_line;
+            $$ = new Node(AST_CLASS, 3, className, inherits, $6);
+			$$->lineNumber = @2.first_line;
             free($2); 
             free($4);
             }
-        |CLASS TYPE LBRACE features RBRACE SEMI
-            { 
-            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, "Object"), $4);
+        | CLASS TYPE LBRACE features RBRACE SEMI
+            {
+			auto className = new Node(AST_TYPE, $2);
+			className->lineNumber = @2.first_line;
+			auto inherits = new Node(AST_TYPE, "Object");
+			inherits->lineNumber = @2.first_line;
+            $$ = new Node(AST_CLASS, 3, className, inherits, $4);
+			$$->lineNumber = @2.first_line;
             free($2);
             } 
-        |CLASS TYPE INHERITS TYPE LBRACE RBRACE SEMI
+        | CLASS TYPE INHERITS TYPE LBRACE RBRACE SEMI
             { 
-            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, $4), new Node(AST_NULL)); //TODO: nil node? figure it out future me
+			auto className = new Node(AST_TYPE, $2);
+			className->lineNumber = @2.first_line;
+			auto inherits = new Node(AST_TYPE, "Object");
+			inherits->lineNumber = @4.first_line;
+            $$ = new Node(AST_CLASS, 3, className, inherits, new Node(AST_NULL));
+			$$->lineNumber = @2.first_line;
             free($2);
             free($4);
             }
-        |CLASS TYPE LBRACE RBRACE SEMI
+        | CLASS TYPE LBRACE RBRACE SEMI
             { 
-            $$ = new Node(AST_CLASS, 3, new Node(AST_TYPE, $2), new Node(AST_TYPE, "Object"), new Node(AST_NULL)); //TODO: nil node? figure it out future me
+			auto className = new Node(AST_TYPE, $2);
+			className->lineNumber = @2.first_line;
+			auto inherits = new Node(AST_TYPE, "Object");
+			inherits->lineNumber = @2.first_line;
+            $$ = new Node(AST_CLASS, 3, className, inherits, new Node(AST_NULL));
+			$$->lineNumber = @2.first_line;
             free($2);
             } 
         | error SEMI
             {  
                 $$ = new Node(AST_NULL);
+				$$->lineNumber = @1.first_line;
             }
         ;
        
@@ -154,7 +178,10 @@
     /* Feature list may be empty, but no empty features in list. */
     features
         : feature
-            { $$ = new Node(AST_FEATURESET, 1, $1); }
+            { 
+			$$ = new Node(AST_FEATURESET, 1, $1);
+			$$->lineNumber = $1->lineNumber;
+			}
         | features feature
             { $$ = $1; $1->addChild($2); }
         ;	
@@ -162,31 +189,52 @@
     feature
         : IDENTIFIER LPAREN formals RPAREN COLON TYPE LBRACE expression RBRACE SEMI
             { 
-            $$ = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, $1), $3, new Node(AST_TYPE, $6), $8);
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $1);
+			methodID->lineNumber = @1.first_line;
+			auto returnType = new Node(AST_TYPE, $6);
+			returnType->lineNumber = @6.first_line;
+            $$ = new Node(AST_FEATURE_METHOD, 4, methodID, $3, returnType, $8);
+			$$->lineNumber = @1.first_line;
             free($1);
             free($6);
             }
         | IDENTIFIER LPAREN RPAREN COLON TYPE LBRACE expression RBRACE SEMI
             { 
-            $$ = new Node(AST_FEATURE_METHOD, 4, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_NULL), new Node(AST_TYPE, $5), $7);
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $1);
+			methodID->lineNumber = @1.first_line;
+			auto returnType = new Node(AST_TYPE, $5);
+			returnType->lineNumber = @5.first_line;
+            $$ = new Node(AST_FEATURE_METHOD, 4, methodID, new Node(AST_NULL), returnType, $7);
+			$$->lineNumber = @1.first_line;
             free($1);
             free($5);
             }
         | IDENTIFIER COLON TYPE SEMI
             { 
-            $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3), new Node(AST_NULL)); 
+			auto attrID = new Node(AST_METHOD_IDENTIFIER, $1);
+			attrID->lineNumber = @1.first_line;
+			auto attrType = new Node(AST_TYPE, $3);
+			attrType->lineNumber = @3.first_line;
+            $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, attrID, attrType, new Node(AST_NULL)); 
+			$$->lineNumber = @1.first_line;
             free($1); 
             free($3);
             }
         | IDENTIFIER COLON TYPE LARROW expression SEMI
             { 
-            $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3), $5); 
+			auto attrID = new Node(AST_METHOD_IDENTIFIER, $1);
+			attrID->lineNumber = @1.first_line;
+			auto attrType = new Node(AST_TYPE, $3);
+			attrType->lineNumber = @3.first_line;
+            $$ = new Node(AST_FEATURE_ATTRIBUTE, 3, attrID, attrType, $5); 
+			$$->lineNumber = @1.first_line;
             free($1); 
             free($3); 
             }
         | error SEMI
             {  
                 $$ = new Node(AST_NULL);
+				$$->lineNumber = @1.first_line;
             }
         ;
     
@@ -200,7 +248,12 @@
     formal
         : IDENTIFIER COLON TYPE 
             { 
-            $$ = new Node(AST_FORMAL, 2, new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_TYPE, $3)); 
+			auto formalID = new Node(AST_METHOD_IDENTIFIER, $1);
+			formalID->lineNumber = @1.first_line;
+			auto formalType = new Node(AST_TYPE, $3);
+			formalType->lineNumber = @3.first_line;
+            $$ = new Node(AST_FORMAL, 2, formalID, formalType); 
+			$$->lineNumber = @1.first_line;
             free($1); 
             free($3); 
             }
@@ -209,29 +262,65 @@
        
     expression
     	: expression TIMES expression 
-            { $$ = new Node(AST_TIMES,2,$1,$3); } 
+            { 
+			$$ = new Node(AST_TIMES, 2, $1, $3); 
+			$$->lineNumber = @2.first_line;
+			} 
     	| LPAREN expression RPAREN     
             { $$ = $2; }
         | NOT expression
-            { $$ = new Node(AST_NOT,1,$2); }
+            { 
+			$$ = new Node(AST_NOT, 1, $2);
+			$$->lineNumber = @1.first_line;
+			}
         | expression EQUALS expression
-            { $$ = new Node(AST_EQUALS,2,$1,$3); }
+            { 
+			$$ = new Node(AST_EQUALS, 2, $1, $3); 
+			$$->lineNumber = @2.first_line;
+			}
         | expression LE expression 
-            { $$ = new Node(AST_LE,2,$1,$3); }
+            { 
+			$$ = new Node(AST_LE, 2, $1, $3); 
+			$$->lineNumber = @2.first_line;
+			}
         | expression LT expression
-            { $$ = new Node(AST_LT,2,$1,$3); } 
+            { 
+			$$ = new Node(AST_LT, 2, $1, $3); 
+			$$->lineNumber = @2.first_line;
+			} 
         | TILDE expression
-            { $$ = new Node(AST_TILDE,1,$2); }
+            { 
+			$$ = new Node(AST_TILDE, 1, $2); 
+			$$->lineNumber = @1.first_line;
+			}
         | expression DIVIDE expression
-            { $$ = new Node(AST_DIVIDE,2,$1,$3); } 
+            { 
+			$$ = new Node(AST_DIVIDE, 2, $1, $3); 
+			$$->lineNumber = @2.first_line;
+			} 
         | expression PLUS expression 
-            { $$ = new Node(AST_PLUS,2,$1,$3); }
+            { 
+			$$ = new Node(AST_PLUS, 2, $1, $3); 
+			$$->lineNumber = @2.first_line;
+			}
         | expression MINUS expression
-            { $$ = new Node(AST_MINUS,2,$1,$3); }
+            { 
+			$$ = new Node(AST_MINUS, 2, $1, $3); 
+			$$->lineNumber = @2.first_line;
+			}
         | ISVOID expression
-            { $$ = new Node(AST_ISVOID,1,$2); }
+            { 
+			$$ = new Node(AST_ISVOID, 1, $2); 
+			$$->lineNumber = @1.first_line;
+			}
         | NEW TYPE
-            { $$ = new Node(AST_NEW,1,new Node(AST_TYPE, $2)); free($2); }
+            { 
+			auto newType = new Node(AST_TYPE, $2);
+			newType->lineNumber = @2.first_line;
+			$$ = new Node(AST_NEW,1,newType); 
+			$$->lineNumber = @1.first_line;
+			free($2); 
+			}
         | case_
             { $$ = $1; }
         | let_statement
@@ -239,50 +328,139 @@
         | LBRACE block_expressions RBRACE
             { $$ = $2; }
         | WHILE expression LOOP expression POOL
-            { $$ = new Node(AST_WHILE,2,$2,$4); }
+            { 
+			$$ = new Node(AST_WHILE, 2, $2, $4); 
+			$$->lineNumber = @1.first_line;
+			}
         | IF expression THEN expression ELSE expression FI
-            { $$ = new Node(AST_IF,3,$2,$4,$6); }
+            { 
+			$$ = new Node(AST_IF, 3, $2, $4, $6); 
+			$$->lineNumber = @1.first_line;
+			}
         | IDENTIFIER LPAREN expressions RPAREN 
-            { $$ = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $1),$3); free($1); }
+            { 
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $1);
+			methodID->lineNumber = @1.first_line;
+			$$ = new Node(AST_DISPATCH, 4, new Node(AST_NULL), new Node(AST_NULL), methodID, $3); 
+			$$->lineNumber = @1.first_line;
+			free($1); 
+			}
         | IDENTIFIER LPAREN RPAREN
-            { $$ = new Node(AST_DISPATCH,4,new Node(AST_NULL),new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $1), new Node(AST_NULL)); free($1); }
+            { 
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $1);
+			methodID->lineNumber = @1.first_line;
+			$$ = new Node(AST_DISPATCH, 4, new Node(AST_NULL), new Node(AST_NULL), methodID, new Node(AST_NULL)); 
+			$$->lineNumber = @1.first_line;
+			free($1); 
+			}
         | expression AT TYPE DOT IDENTIFIER LPAREN expressions RPAREN
-            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_TYPE,$3),new Node(AST_METHOD_IDENTIFIER, $5),$7); free($3); free($5); }
+            { 
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $5);
+			methodID->lineNumber = @5.first_line;
+			auto type = new Node(AST_TYPE, $3);
+			type->lineNumber = @3.first_line;
+			$$ = new Node(AST_DISPATCH, 4, $1, type, methodID, $7); 
+			$$->lineNumber = @1.first_line;
+			free($3); 
+			free($5); 
+			}
         | expression AT TYPE DOT IDENTIFIER LPAREN RPAREN
-            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_TYPE,$3),new Node(AST_METHOD_IDENTIFIER, $5), new Node(AST_NULL)); free($3); free($5); } 
+            { 
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $5);
+			methodID->lineNumber = @5.first_line;
+			auto type = new Node(AST_TYPE, $3);
+			type->lineNumber = @3.first_line;
+			$$ = new Node(AST_DISPATCH, 4, $1, type, methodID, new Node(AST_NULL)); 
+			$$->lineNumber = @1.first_line;
+			free($3); 
+			free($5); 
+			} 
         | expression DOT IDENTIFIER LPAREN expressions RPAREN
-            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $3),$5); free($3); }
+            { 
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $3);
+			methodID->lineNumber = @3.first_line;
+			$$ = new Node(AST_DISPATCH, 4, $1, new Node(AST_NULL), methodID, $5); 
+			$$->lineNumber = @1.first_line;
+			free($3); 
+			}
         | expression DOT IDENTIFIER LPAREN RPAREN
-            { $$ = new Node(AST_DISPATCH,4,$1,new Node(AST_NULL),new Node(AST_METHOD_IDENTIFIER, $3), new Node(AST_NULL)); free($3); }
+            { 
+			auto methodID = new Node(AST_METHOD_IDENTIFIER, $3);
+			methodID->lineNumber = @3.first_line;
+			$$ = new Node(AST_DISPATCH, 4, $1, new Node(AST_NULL), methodID, new Node(AST_NULL)); 
+			$$->lineNumber = @1.first_line;
+			free($3); 
+			}
         | IDENTIFIER LARROW expression
-            { $$ = new Node(AST_LARROW,2,new Node(AST_IDENTIFIER, $1),$3); free($1); }
+            { 
+			auto assignID = new Node(AST_IDENTIFIER, $1);
+			assignID->lineNumber = @1.first_line;
+			$$ = new Node(AST_LARROW, 2, assignID, $3); 
+			$$->lineNumber = @2.first_line;
+			free($1); 
+			}
         | TRUE
-                { $$ = new Node(AST_TRUE); }
+            { 
+			$$ = new Node(AST_TRUE); 
+			$$->lineNumber = @1.first_line;
+			}
         | FALSE
-                { $$ = new Node(AST_FALSE); }
+            { 
+			$$ = new Node(AST_FALSE); 
+			$$->lineNumber = @1.first_line;
+			}
         | STRING
-            { $$ = new Node(AST_STRING, $1); free($1); }
+            { 
+			$$ = new Node(AST_STRING, $1); 
+			$$->lineNumber = @1.first_line;
+			free($1); 
+			}
         | INTEGERLITERAL
-            { $$ = new Node(AST_INTEGERLITERAL, to_string($1)); } //TODO: check this, getting integer correctly?
+            { 
+			$$ = new Node(AST_INTEGERLITERAL, to_string($1)); 
+			$$->lineNumber = @1.first_line;
+			} //TODO: check this, getting integer correctly?
         | IDENTIFIER
-            { $$ = new Node(AST_IDENTIFIER, $1); free($1); }
+            { 
+			$$ = new Node(AST_IDENTIFIER, $1); 
+			$$->lineNumber = @1.first_line;
+			free($1); 
+			}
         | LBRACE error RBRACE
-            { $$ = new Node(AST_NULL); yyerrok; }
+            { 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @2.first_line;
+			yyerrok; 
+			}
         | LPAREN error RPAREN
-            { $$ = new Node(AST_NULL); yyerrok; }
+            { 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @2.first_line;
+			yyerrok; 
+			}
         ;
         
     block_expressions
     	: expression SEMI
-            { $$ = new Node(AST_EXPRSEMILIST,1,$1); }
+            { 
+			$$ = new Node(AST_EXPRSEMILIST,1,$1); 
+			$$->lineNumber = @1.first_line;
+			}
         | block_expressions expression SEMI
             { $$ = $1; $1->addChild($2); }
         | error SEMI
-            {  $$ = new Node(AST_NULL); }
-            ;
+            {  
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @1.first_line;
+			}
+        ;
+
     expressions
         :expression
-            { $$ = new Node(AST_EXPRLIST,1,$1); }
+            { 
+			$$ = new Node(AST_EXPRLIST,1,$1); 
+			$$->lineNumber = $1->lineNumber;
+			}
         | expressions COMMA expression
             { $$ = $1; $1->setFirstChild($3); } 
         ;
@@ -290,94 +468,177 @@
 
     case_
     	: CASE expression OF cases ESAC
-    		{ $$ = new Node(AST_CASESTATEMENT,2,$2,$4); }
+    		{ 
+			$$ = new Node(AST_CASESTATEMENT, 2, $2, $4); 
+			$$->lineNumber = @1.first_line;
+			}
     	;
 
     cases
     	: IDENTIFIER COLON TYPE RARROW expression SEMI
-    		{ $$ = new Node(AST_CASELIST); $$->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $1),new Node(AST_TYPE, $3),$5)); free($1); free($3); }
+    		{ 
+			auto caseID = new Node(AST_CASE_IDENTIFIER, $1);
+			caseID->lineNumber = @1.first_line;
+			auto caseType = new Node(AST_TYPE, $3);
+			caseType->lineNumber = @3.first_line;
+			auto caseNode = new Node(AST_CASE, 3, caseID, caseType, $5);
+			caseNode->lineNumber = @1.first_line;
+			$$ = new Node(AST_CASELIST); 
+			$$->addChild(caseNode); 
+			$$->lineNumber = @1.first_line;
+			free($1); 
+			free($3); 
+			}
     	| cases IDENTIFIER COLON TYPE RARROW expression SEMI
-            { $$ = $1; $1->addChild(new Node(AST_CASE,3,new Node(AST_CASE_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6)); free($2); free($4); }
+            { 
+			auto caseID = new Node(AST_CASE_IDENTIFIER, $2);
+			caseID->lineNumber = @2.first_line;
+			auto caseType = new Node(AST_TYPE, $4);
+			caseType->lineNumber = @4.first_line;
+			auto caseNode = new Node(AST_CASE, 3, caseID, caseType, $6);
+			caseNode->lineNumber = @2.first_line;
+			$$ = $1; 
+			$1->addChild(caseNode); 
+			free($2); 
+			free($4); 
+			}
     	;
     
     let_statement
     	: LET IDENTIFIER COLON TYPE IN expression %prec let_prec
     		{ 
-            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),new Node(AST_NULL)),$6); 
+			auto letID = new Node(AST_LET_IDENTIFIER, $2);
+			letID->lineNumber = @2.first_line;
+			auto letType = new Node(AST_TYPE, $4);
+			letType->lineNumber = @4.first_line;
+			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, new Node(AST_NULL));
+			idTypeExpr->lineNumber = @2.first_line;
+            $$ = new Node(AST_LET,2, idTypeExpr, $6); 
+			$$->lineNumber = @1.first_line;
             free($2); 
             free($4); 
             }
     	| LET IDENTIFIER COLON TYPE let_init %prec let_prec
     		{ 
-            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),new Node(AST_NULL)) ,$5); 
+			auto letID = new Node(AST_LET_IDENTIFIER, $2);
+			letID->lineNumber = @2.first_line;
+			auto letType = new Node(AST_TYPE, $4);
+			letType->lineNumber = @4.first_line;
+			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, new Node(AST_NULL));
+            $$ = new Node(AST_LET, 2, idTypeExpr, $5); 
+			$$->lineNumber = @1.first_line;
             free($2); 
             free($4); 
             }
     	| LET IDENTIFIER COLON TYPE LARROW expression IN expression %prec let_prec
     		{ 
-            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6) ,$8); 
+			auto letID = new Node(AST_LET_IDENTIFIER, $2);
+			letID->lineNumber = @2.first_line;
+			auto letType = new Node(AST_TYPE, $4);
+			letType->lineNumber = @4.first_line;
+			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, $6);
+			idTypeExpr->lineNumber = @2.first_line;
+            $$ = new Node(AST_LET, 2, idTypeExpr, $8); 
+			$$->lineNumber = @1.first_line;
             free($2); 
             free($4); 
             }
         | LET IDENTIFIER COLON TYPE LARROW expression let_init %prec let_prec
     		{ 
-            $$ = new Node(AST_LET,2, new Node(AST_IDTYPEEXPR,3,new Node(AST_LET_IDENTIFIER, $2),new Node(AST_TYPE, $4),$6) ,$7); 
+			auto letID = new Node(AST_LET_IDENTIFIER, $2);
+			letID->lineNumber = @2.first_line;
+			auto letType = new Node(AST_TYPE, $4);
+			letType->lineNumber = @4.first_line;
+			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, $6);
+			idTypeExpr->lineNumber = @2.first_line;
+            $$ = new Node(AST_LET, 2, idTypeExpr, $7); 
+			$$->lineNumber = @1.first_line;
             free($2); 
             free($4); 
             }
     	| LET IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
+			}
         | LET IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
+			}
     	| LET IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @8.first_line;
+			}
     	| LET IDENTIFIER COLON TYPE IN error %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
+			}
     	;
     	
     	
     let_init
     	: COMMA IDENTIFIER COLON TYPE IN expression %prec let_prec
     		{ 
-            $$ = new Node(AST_LET,1
-                ,new Node(AST_IDTYPEEXPR,3
-                    ,new Node(AST_LET_IDENTIFIER, $2)
-                    ,new Node(AST_TYPE, $4)
-                    ,new Node(AST_NULL))
-                ,$6);
+			auto letID = new Node(AST_LET_IDENTIFIER, $2);
+			letID->lineNumber = @2.first_line;
+			auto letType = new Node(AST_TYPE, $4);
+			letType->lineNumber = @4.first_line;
+			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, new Node(AST_NULL));
+			idTypeExpr->lineNumber = @2.first_line;
+            $$ = new Node(AST_LET, 1, idTypeExpr, $6);
+			$$->lineNumber = @2.first_line;
             free($2);
             free($4);
             }
     	| COMMA IDENTIFIER COLON TYPE LARROW expression IN expression %prec let_prec
     		{ 
-            $$ = new Node(AST_LET,1
-                ,new Node(AST_IDTYPEEXPR,3
-                    ,new Node(AST_LET_IDENTIFIER, $2)
-                    ,new Node(AST_TYPE, $4)
-                    ,$6)
-                ,$8);
+			auto letID = new Node(AST_LET_IDENTIFIER, $2);
+			letID->lineNumber = @2.first_line;
+			auto letType = new Node(AST_TYPE, $4);
+			letType->lineNumber = @4.first_line;
+			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, $6);
+			idTypeExpr->lineNumber = @2.first_line;
+            $$ = new Node(AST_LET, 1, idTypeExpr, $8);
+			$$->lineNumber = @2.first_line;
             free($2);
             free($4);
             }
     	| COMMA IDENTIFIER COLON TYPE LARROW expression let_init %prec let_prec
     		{ 
-            $$ = new Node(AST_LET,1
-                ,new Node(AST_IDTYPEEXPR,3
-                    ,new Node(AST_LET_IDENTIFIER, $2)
-                    ,new Node(AST_TYPE, $4)
-                    ,$6)
-                ,$7);
+			auto letID = new Node(AST_LET_IDENTIFIER, $2);
+			letID->lineNumber = @2.first_line;
+			auto letType = new Node(AST_TYPE, $4);
+			letType->lineNumber = @4.first_line;
+			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, $6);
+			idTypeExpr->lineNumber = @2.first_line;
+            $$ = new Node(AST_LET, 1, idTypeExpr, $7);
+			$$->lineNumber = @2.first_line;
             free($2);
             free($4);
             }
     	| COMMA IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
+			}
     	| COMMA IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
+			}
     	| COMMA IDENTIFIER COLON TYPE IN error %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
+			}
     	| COMMA IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
-    		{ $$ = new Node(AST_NULL); }
+    		{ 
+			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @8.first_line;
+			}
     	;
     /* end of grammar */
     %%
