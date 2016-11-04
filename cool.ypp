@@ -172,6 +172,7 @@
         | error SEMI
             {  
                 $$ = new Node(AST_NULL);
+				$$->lineNumber = @1.first_line;
             }
         ;
        
@@ -430,11 +431,13 @@
         | LBRACE error RBRACE
             { 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @2.first_line;
 			yyerrok; 
 			}
         | LPAREN error RPAREN
             { 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @2.first_line;
 			yyerrok; 
 			}
         ;
@@ -450,6 +453,7 @@
         | error SEMI
             {  
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @1.first_line;
 			}
         ;
 
@@ -557,18 +561,22 @@
     	| LET IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
 			}
         | LET IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
 			}
     	| LET IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @8.first_line;
 			}
     	| LET IDENTIFIER COLON TYPE IN error %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
 			}
     	;
     	
@@ -616,18 +624,22 @@
     	| COMMA IDENTIFIER COLON TYPE LARROW error IN expression %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
 			}
     	| COMMA IDENTIFIER COLON TYPE LARROW error let_init %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
 			}
     	| COMMA IDENTIFIER COLON TYPE IN error %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @6.first_line;
 			}
     	| COMMA IDENTIFIER COLON TYPE LARROW expression IN error %prec let_prec
     		{ 
 			$$ = new Node(AST_NULL); 
+			$$->lineNumber = @8.first_line;
 			}
     	;
     /* end of grammar */
