@@ -15,12 +15,10 @@
     
     Node *root;
     void yyerror(char *s);        /*  defined below; called for each parse error */
-    extern int yylex();           /*  the entry point to the lexer  */ //TODO: check, might be error
+    extern int yylex();           /*  the entry point to the lexer  */
 	extern int yyparse();          /* number of errors in lexing and parsing */
     extern int numErrors;
     %}
-    
-	%locations
 
     /* A union of all the types that can be the result of parsing actions. */
     %union
@@ -236,7 +234,7 @@
         | error SEMI
             {  
                 $$ = new Node(AST_NULL);
-				$$->lineNumber = @1.first_line; //TODO: check if this works
+				$$->lineNumber = @1.first_line;
             }
         ;
     
@@ -344,7 +342,7 @@
 			auto methodID = new Node(AST_METHOD_IDENTIFIER, $1);
 			methodID->lineNumber = @1.first_line;
 			$$ = new Node(AST_DISPATCH, 4, new Node(AST_NULL), new Node(AST_NULL), methodID, $3); 
-			$$->lineNumber = @1.first_line; //TODO: put it on ID or on paren?
+			$$->lineNumber = @1.first_line;
 			free($1); 
 			}
         | IDENTIFIER LPAREN RPAREN
@@ -352,7 +350,7 @@
 			auto methodID = new Node(AST_METHOD_IDENTIFIER, $1);
 			methodID->lineNumber = @1.first_line;
 			$$ = new Node(AST_DISPATCH, 4, new Node(AST_NULL), new Node(AST_NULL), methodID, new Node(AST_NULL)); 
-			$$->lineNumber = @1.first_line; //TODO: put it on ID or on paren?
+			$$->lineNumber = @1.first_line;
 			free($1); 
 			}
         | expression AT TYPE DOT IDENTIFIER LPAREN expressions RPAREN
@@ -362,7 +360,7 @@
 			auto type = new Node(AST_TYPE, $3);
 			type->lineNumber = @3.first_line;
 			$$ = new Node(AST_DISPATCH, 4, $1, type, methodID, $7); 
-			$$->lineNumber = @1.first_line; //TODO: put it on expr, ID or on paren?
+			$$->lineNumber = @1.first_line;
 			free($3); 
 			free($5); 
 			}
@@ -373,7 +371,7 @@
 			auto type = new Node(AST_TYPE, $3);
 			type->lineNumber = @3.first_line;
 			$$ = new Node(AST_DISPATCH, 4, $1, type, methodID, new Node(AST_NULL)); 
-			$$->lineNumber = @1.first_line; //TODO: put it on expr, ID or on paren?
+			$$->lineNumber = @1.first_line;
 			free($3); 
 			free($5); 
 			} 
@@ -382,7 +380,7 @@
 			auto methodID = new Node(AST_METHOD_IDENTIFIER, $3);
 			methodID->lineNumber = @3.first_line;
 			$$ = new Node(AST_DISPATCH, 4, $1, new Node(AST_NULL), methodID, $5); 
-			$$->lineNumber = @1.first_line; //TODO: put it on expr, ID or on paren?
+			$$->lineNumber = @1.first_line;
 			free($3); 
 			}
         | expression DOT IDENTIFIER LPAREN RPAREN
@@ -390,7 +388,7 @@
 			auto methodID = new Node(AST_METHOD_IDENTIFIER, $3);
 			methodID->lineNumber = @3.first_line;
 			$$ = new Node(AST_DISPATCH, 4, $1, new Node(AST_NULL), methodID, new Node(AST_NULL)); 
-			$$->lineNumber = @1.first_line; //TODO: put it on expr, ID or on paren?
+			$$->lineNumber = @1.first_line;
 			free($3); 
 			}
         | IDENTIFIER LARROW expression
@@ -487,7 +485,7 @@
 			caseNode->lineNumber = @1.first_line;
 			$$ = new Node(AST_CASELIST); 
 			$$->addChild(caseNode); 
-			$$->lineNumber = @1.first_line; //TODO: put line number at RARROW?
+			$$->lineNumber = @1.first_line;
 			free($1); 
 			free($3); 
 			}
