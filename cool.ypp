@@ -150,7 +150,7 @@
             { 
 			auto className = new Node(AST_TYPE, $2);
 			className->lineNumber = @2.first_line;
-			auto inherits = new Node(AST_TYPE, "Object");
+			auto inherits = new Node(AST_TYPE, $4);
 			inherits->lineNumber = @4.first_line;
             $$ = new Node(AST_CLASS, 3, className, inherits, new Node(AST_NULL));
 			$$->lineNumber = @2.first_line;
