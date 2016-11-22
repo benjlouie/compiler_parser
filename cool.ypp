@@ -588,7 +588,7 @@
 			letType->lineNumber = @4.first_line;
 			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, new Node(AST_NULL));
 			idTypeExpr->lineNumber = @2.first_line;
-            $$ = new Node(AST_LET, 1, idTypeExpr, $6);
+            $$ = new Node(AST_LET, 2, idTypeExpr, $6);
 			$$->lineNumber = @2.first_line;
             free($2);
             free($4);
@@ -601,7 +601,7 @@
 			letType->lineNumber = @4.first_line;
 			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, $6);
 			idTypeExpr->lineNumber = @2.first_line;
-            $$ = new Node(AST_LET, 1, idTypeExpr, $8);
+            $$ = new Node(AST_LET, 2, idTypeExpr, $8);
 			$$->lineNumber = @2.first_line;
             free($2);
             free($4);
@@ -614,7 +614,7 @@
 			letType->lineNumber = @4.first_line;
 			auto idTypeExpr = new Node(AST_IDTYPEEXPR, 3, letID, letType, $6);
 			idTypeExpr->lineNumber = @2.first_line;
-            $$ = new Node(AST_LET, 1, idTypeExpr, $7);
+            $$ = new Node(AST_LET, 2, idTypeExpr, $7);
 			$$->lineNumber = @2.first_line;
             free($2);
             free($4);
